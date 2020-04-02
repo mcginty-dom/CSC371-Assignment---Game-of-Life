@@ -245,6 +245,11 @@ const unsigned int Grid::get_dead_cells() const {
  *      The new edge size for both the width and height of the grid.
  */
 
+void Grid::resize(unsigned int square_size) {
+    this->width=square_size;
+    this->height=square_size;
+    this->total_cells=width*height;
+}
 
 /**
  * Grid::resize(width, height)
@@ -267,6 +272,11 @@ const unsigned int Grid::get_dead_cells() const {
  *      The new height for the grid.
  */
 
+void Grid::resize(unsigned int new_width, unsigned int new_height) {
+    this->width = new_width;
+    this->height = new_height;
+    this->total_cells=new_width*new_height;
+}
 
 /**
  * Grid::get_index(x, y)

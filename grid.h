@@ -42,6 +42,8 @@ class Grid {
         const unsigned int get_total_cells() const;
         const unsigned int get_alive_cells() const;
         const unsigned int get_dead_cells() const;
+        void resize(unsigned int square_size);
+        void resize(unsigned int width, unsigned int height);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.
