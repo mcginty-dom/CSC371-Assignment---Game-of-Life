@@ -25,6 +25,23 @@ enum Cell : char {
  * Declare the structure of the Grid class for representing a 2d grid of cells.
  */
 class Grid {
+    private:
+        unsigned int width;
+        unsigned int height;
+        unsigned int total_cells;
+        unsigned int alive_cells;
+        unsigned int dead_cells;
+    public:
+        Grid();
+        Grid(unsigned int square_size);
+        Grid(unsigned int width, unsigned int height);
+        ~Grid();
+
+        const unsigned int get_width() const;
+        const unsigned int get_height() const;
+        const unsigned int get_total_cells() const;
+        const unsigned int get_alive_cells() const;
+        const unsigned int get_dead_cells() const;
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.

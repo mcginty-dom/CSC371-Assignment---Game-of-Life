@@ -8,7 +8,7 @@
  *
  * You are encouraged to use STL container types as an underlying storage mechanism for the grid cells.
  *
- * @author YOUR_STUDENT_NUMBER
+ * @author 951939
  * @date March, 2020
  */
 #include "grid.h"
@@ -29,6 +29,9 @@
  *
  */
 
+Grid::Grid(): width(0), height(0), total_cells(0), 
+alive_cells(0), dead_cells(0){
+}
 
 /**
  * Grid::Grid(square_size)
@@ -54,6 +57,10 @@
  *      The edge size to use for the width and height of the grid.
  */
 
+Grid::Grid(unsigned int square_size): width(square_size), 
+height(square_size), total_cells(square_size*square_size), 
+alive_cells(0), dead_cells(square_size*square_size){       
+}
 
 /**
  * Grid::Grid(width, height)
@@ -72,6 +79,13 @@
  *      The height of the grid.
  */
 
+Grid::Grid(unsigned int width, unsigned int height): 
+width(width), height(height), total_cells(width*height), 
+alive_cells(0), dead_cells(width*height){       
+}
+
+Grid::~Grid() {
+}
 
 /**
  * Grid::get_width()
@@ -97,6 +111,9 @@
  *      The width of the grid.
  */
 
+const unsigned int Grid::get_width() const {
+    return width;
+}
 
 /**
  * Grid::get_height()
@@ -122,6 +139,9 @@
  *      The height of the grid.
  */
 
+const unsigned int Grid::get_height() const {
+    return height;
+}
 
 /**
  * Grid::get_total_cells()
@@ -147,6 +167,9 @@
  *      The number of total cells.
  */
 
+const unsigned int Grid::get_total_cells() const {
+    return total_cells;
+}
 
 /**
  * Grid::get_alive_cells()
@@ -172,6 +195,9 @@
  *      The number of alive cells.
  */
 
+const unsigned int Grid::get_alive_cells() const {
+    return alive_cells;
+}
 
 /**
  * Grid::get_dead_cells()
@@ -197,6 +223,9 @@
  *      The number of dead cells.
  */
 
+const unsigned int Grid::get_dead_cells() const {
+    return dead_cells;
+}
 
 /**
  * Grid::resize(square_size)
