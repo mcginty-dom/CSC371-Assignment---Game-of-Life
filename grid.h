@@ -46,6 +46,9 @@ class Grid {
         void resize(unsigned int width, unsigned int height);
         Cell get(unsigned int x, unsigned int y);
         void set(unsigned int x, unsigned int y, Cell value);
+        Cell operator()(unsigned int x,unsigned int y);
+        //const Cell Grid::operator()(unsigned int x,unsigned int y) const;
+        const Grid crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.

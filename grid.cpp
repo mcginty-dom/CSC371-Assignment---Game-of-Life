@@ -269,18 +269,16 @@ const unsigned int Grid::get_dead_cells() {
 
 void Grid::resize(unsigned int square_size) {
     std::vector<Cell> tempCells;
-    //Initializes new cells with Cell::DEAD
     for (unsigned int y = 0; y < square_size; y++) {
         for (unsigned int x = 0; x < square_size; x++) {
-            tempCells.push_back(Cell::DEAD);
+            if ((x<width) && (y<height)) {
+                tempCells.push_back(cells.at(get_index(x,y)));
+            } else {
+                tempCells.push_back(Cell::DEAD);
+            }
         }
     }
-    for (unsigned int y = 0; y < height; y++) {
-        for (unsigned int x = 0; x < width; x++) {
-            tempCells.at(get_index(x, y)) = cells.at(get_index(x, y));
-        }
-    }
-    this->cells = tempCells;
+    this->cells=tempCells;
     this->width = square_size;
     this->height = square_size;
 }
@@ -317,49 +315,8 @@ void Grid::resize(unsigned int new_width, unsigned int new_height) {
                 tempCells.push_back(Cell::DEAD);
             }
         }
-        //tempCells.resize((width*height)+width_diff, Cell::DEAD);
-        //tempCells.push_back(Cell::DEAD);
     }
     this->cells=tempCells;
-
-    /**
-    //58/61 same as below
-    std::vector<Cell> tempCells=cells;
-    cells.resize(new_width*new_height, Cell::DEAD);
-    for (unsigned int y = 0; y < new_height; y++) {
-        for (unsigned int x = 0; x < new_width; x++) {
-            if (x<=width) {
-                set(x,y,tempCells.at(get_index(x,y)));
-            } else {
-                set(x,y,Cell::DEAD);
-            }
-        }
-    }
-    //cells.shrink_to_fit();
-    //tempCells.shrink_to_fit();
-    */
-
-    /**
-    std::vector<Cell> tempCells;
-    tempCells.resize(new_width*new_height);
-    //unsigned int hdiff = new_height-height;
-    //if (hdiff<0) {hdiff=0;};
-    //unsigned int wdiff = new_width-width;
-    //if (wdiff<0) {wdiff=0;};
-
-    for (unsigned int y = 0; y < new_height; y++) {
-        for (unsigned int x = 0; x < new_width; x++) {
-            if ((x<=width) && (y<=height)) {
-                tempCells.at(get_index(x,y)) = cells.at(get_index(x,y)); 
-            } else {
-                tempCells.at(get_index(x,y)) = Cell::DEAD; 
-            }
-        }
-    }
-    this->cells = tempCells;
-    //cells.swap(tempCells);
-    */
-
     this->width = new_width;
     this->height = new_height;
 }
@@ -485,6 +442,10 @@ void Grid::set(unsigned int x, unsigned int y, Cell value){
  *      std::runtime_error or sub-class if x,y is not a valid coordinate within the grid.
  */
 
+Cell Grid::operator()(unsigned int x,unsigned int y) {
+    Cell &value = cells[get_index(x, y)]; 
+    return value;
+}
 
 /**
  * Grid::operator()(x, y)
@@ -517,6 +478,7 @@ void Grid::set(unsigned int x, unsigned int y, Cell value){
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
+//const Cell Grid::operator()(unsigned int x,unsigned int y) const {}
 
 /**
  * Grid::crop(x0, y0, x1, y1)
@@ -553,6 +515,19 @@ void Grid::set(unsigned int x, unsigned int y, Cell value){
  *      or if the crop window has a negative size.
  */
 
+const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1){
+    std::vector<Cell> tempCells;
+    unsigned int xdiff = x1-x0;
+    unsigned int ydiff = y1-y0;
+    for (unsigned int y = y0; y < y1; y++) {
+        for (unsigned int x = x0; x < x1; x++) {
+            tempCells.push_back(cells.at(get_index(x,y)));
+        }
+    }
+    Grid newGrid = Grid(xdiff,ydiff);
+    newGrid.cells = tempCells;
+    return newGrid;
+}
 
 /**
  * Grid::merge(other, x0, y0, alive_only = false)
