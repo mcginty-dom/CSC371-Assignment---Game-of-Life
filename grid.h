@@ -5,13 +5,14 @@
  * The test suites provide granular BDD style (Behaviour Driven Development) test cases
  * which will help further understand the specification you need to code to.
  *
- * @author YOUR_STUDENT_NUMBER
+ * @author 951939
  * @date March, 2020
  */
 #pragma once
 
 // Add the minimal number of includes you need in order to declare the class.
 // #include ...
+#include <vector>
 
 /**
  * A Cell is a char limited to two named values for Cell::DEAD and Cell::ALIVE.
@@ -28,9 +29,8 @@ class Grid {
     private:
         unsigned int width;
         unsigned int height;
-        unsigned int total_cells;
-        unsigned int alive_cells;
-        unsigned int dead_cells;
+        std::vector<Cell> cells;
+        unsigned int get_index(unsigned int x, unsigned int y);
     public:
         Grid();
         Grid(unsigned int square_size);
@@ -40,10 +40,12 @@ class Grid {
         const unsigned int get_width() const;
         const unsigned int get_height() const;
         const unsigned int get_total_cells() const;
-        const unsigned int get_alive_cells() const;
-        const unsigned int get_dead_cells() const;
+        const unsigned int get_alive_cells();
+        const unsigned int get_dead_cells();
         void resize(unsigned int square_size);
         void resize(unsigned int width, unsigned int height);
+        Cell get(unsigned int x, unsigned int y);
+        void set(unsigned int x, unsigned int y, Cell value);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.

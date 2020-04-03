@@ -15,6 +15,8 @@
 
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
+#include <vector>
+#include <iostream>
 
 /**
  * Grid::Grid()
@@ -29,8 +31,7 @@
  *
  */
 
-Grid::Grid(): width(0), height(0), total_cells(0), 
-alive_cells(0), dead_cells(0){
+Grid::Grid(): width(0), height(0){
 }
 
 /**
@@ -57,9 +58,8 @@ alive_cells(0), dead_cells(0){
  *      The edge size to use for the width and height of the grid.
  */
 
-Grid::Grid(unsigned int square_size): width(square_size), 
-height(square_size), total_cells(square_size*square_size), 
-alive_cells(0), dead_cells(square_size*square_size){       
+Grid::Grid(unsigned int square_size): width(square_size), height(square_size){    
+    cells.resize(width*height,Cell::DEAD);
 }
 
 /**
@@ -80,8 +80,8 @@ alive_cells(0), dead_cells(square_size*square_size){
  */
 
 Grid::Grid(unsigned int width, unsigned int height): 
-width(width), height(height), total_cells(width*height), 
-alive_cells(0), dead_cells(width*height){       
+width(width), height(height){
+    cells.resize(width*height,Cell::DEAD);
 }
 
 Grid::~Grid() {
@@ -168,6 +168,12 @@ const unsigned int Grid::get_height() const {
  */
 
 const unsigned int Grid::get_total_cells() const {
+    unsigned int total_cells = 0;
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            total_cells++;
+        }
+    }
     return total_cells;
 }
 
@@ -195,7 +201,15 @@ const unsigned int Grid::get_total_cells() const {
  *      The number of alive cells.
  */
 
-const unsigned int Grid::get_alive_cells() const {
+const unsigned int Grid::get_alive_cells() {
+    unsigned int alive_cells = 0;
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            if (cells.at(get_index(x, y))==Cell::ALIVE) {
+                alive_cells++;
+            } 
+        }
+    }
     return alive_cells;
 }
 
@@ -223,7 +237,15 @@ const unsigned int Grid::get_alive_cells() const {
  *      The number of dead cells.
  */
 
-const unsigned int Grid::get_dead_cells() const {
+const unsigned int Grid::get_dead_cells() {
+    unsigned int dead_cells = 0;
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            if (cells.at(get_index(x, y))==Cell::DEAD) {
+                dead_cells++;
+            } 
+        }
+    }
     return dead_cells;
 }
 
@@ -246,9 +268,21 @@ const unsigned int Grid::get_dead_cells() const {
  */
 
 void Grid::resize(unsigned int square_size) {
-    this->width=square_size;
-    this->height=square_size;
-    this->total_cells=width*height;
+    std::vector<Cell> tempCells;
+    //Initializes new cells with Cell::DEAD
+    for (unsigned int y = 0; y < square_size; y++) {
+        for (unsigned int x = 0; x < square_size; x++) {
+            tempCells.push_back(Cell::DEAD);
+        }
+    }
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            tempCells.at(get_index(x, y)) = cells.at(get_index(x, y));
+        }
+    }
+    this->cells = tempCells;
+    this->width = square_size;
+    this->height = square_size;
 }
 
 /**
@@ -273,9 +307,61 @@ void Grid::resize(unsigned int square_size) {
  */
 
 void Grid::resize(unsigned int new_width, unsigned int new_height) {
+    //80/81 line 45: vector::_M_range_check: __n (which is 64) >= this->size() (which is 64)
+    std::vector<Cell> tempCells;
+    for (unsigned int y = 0; y < new_height; y++) {
+        for (unsigned int x = 0; x < new_width; x++) {
+            if ((x<width) && (y<height)) {
+                tempCells.push_back(cells.at(get_index(x,y)));
+            } else {
+                tempCells.push_back(Cell::DEAD);
+            }
+        }
+        //tempCells.resize((width*height)+width_diff, Cell::DEAD);
+        //tempCells.push_back(Cell::DEAD);
+    }
+    this->cells=tempCells;
+
+    /**
+    //58/61 same as below
+    std::vector<Cell> tempCells=cells;
+    cells.resize(new_width*new_height, Cell::DEAD);
+    for (unsigned int y = 0; y < new_height; y++) {
+        for (unsigned int x = 0; x < new_width; x++) {
+            if (x<=width) {
+                set(x,y,tempCells.at(get_index(x,y)));
+            } else {
+                set(x,y,Cell::DEAD);
+            }
+        }
+    }
+    //cells.shrink_to_fit();
+    //tempCells.shrink_to_fit();
+    */
+
+    /**
+    std::vector<Cell> tempCells;
+    tempCells.resize(new_width*new_height);
+    //unsigned int hdiff = new_height-height;
+    //if (hdiff<0) {hdiff=0;};
+    //unsigned int wdiff = new_width-width;
+    //if (wdiff<0) {wdiff=0;};
+
+    for (unsigned int y = 0; y < new_height; y++) {
+        for (unsigned int x = 0; x < new_width; x++) {
+            if ((x<=width) && (y<=height)) {
+                tempCells.at(get_index(x,y)) = cells.at(get_index(x,y)); 
+            } else {
+                tempCells.at(get_index(x,y)) = Cell::DEAD; 
+            }
+        }
+    }
+    this->cells = tempCells;
+    //cells.swap(tempCells);
+    */
+
     this->width = new_width;
     this->height = new_height;
-    this->total_cells=new_width*new_height;
 }
 
 /**
@@ -295,6 +381,9 @@ void Grid::resize(unsigned int new_width, unsigned int new_height) {
  *      The 1d offset from the start of the data array where the desired cell is located.
  */
 
+unsigned int Grid::get_index(unsigned int x, unsigned int y){
+    return (x+(y*width));
+}
 
 /**
  * Grid::get(x, y)
@@ -325,6 +414,9 @@ void Grid::resize(unsigned int new_width, unsigned int new_height) {
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
+Cell Grid::get(unsigned int x, unsigned int y){
+    return cells.at(get_index(x, y));
+}
 
 /**
  * Grid::set(x, y, value)
@@ -353,6 +445,9 @@ void Grid::resize(unsigned int new_width, unsigned int new_height) {
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
+void Grid::set(unsigned int x, unsigned int y, Cell value){
+    cells.at(get_index(x, y)) = value;
+}
 
 /**
  * Grid::operator()(x, y)
