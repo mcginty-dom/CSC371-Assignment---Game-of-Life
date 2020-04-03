@@ -201,7 +201,7 @@ const unsigned int Grid::get_total_cells() const {
  *      The number of alive cells.
  */
 
-const unsigned int Grid::get_alive_cells() {
+const unsigned int Grid::get_alive_cells() const{
     unsigned int alive_cells = 0;
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
@@ -237,7 +237,7 @@ const unsigned int Grid::get_alive_cells() {
  *      The number of dead cells.
  */
 
-const unsigned int Grid::get_dead_cells() {
+const unsigned int Grid::get_dead_cells() const{
     unsigned int dead_cells = 0;
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
@@ -338,7 +338,7 @@ void Grid::resize(unsigned int new_width, unsigned int new_height) {
  *      The 1d offset from the start of the data array where the desired cell is located.
  */
 
-unsigned int Grid::get_index(unsigned int x, unsigned int y){
+const unsigned int Grid::get_index(unsigned int x, unsigned int y) const{
     return (x+(y*width));
 }
 
@@ -371,7 +371,7 @@ unsigned int Grid::get_index(unsigned int x, unsigned int y){
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-Cell Grid::get(unsigned int x, unsigned int y){
+const Cell Grid::get(unsigned int x, unsigned int y) const{
     return cells.at(get_index(x, y));
 }
 
@@ -478,7 +478,10 @@ Cell Grid::operator()(unsigned int x,unsigned int y) {
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-//const Cell Grid::operator()(unsigned int x,unsigned int y) const {}
+const Cell Grid::operator()(unsigned int x,unsigned int y) const {
+    const Cell &value = cells[get_index(x, y)]; 
+    return value;
+}
 
 /**
  * Grid::crop(x0, y0, x1, y1)
@@ -515,7 +518,7 @@ Cell Grid::operator()(unsigned int x,unsigned int y) {
  *      or if the crop window has a negative size.
  */
 
-const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1){
+const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const{
     std::vector<Cell> tempCells;
     unsigned int xdiff = x1-x0;
     unsigned int ydiff = y1-y0;
@@ -567,6 +570,19 @@ const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned i
  *      std::exception or sub-class if the other grid being placed does not fit within the bounds of the current grid.
  */
 
+void Grid::merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only) {
+    for (unsigned int y = y0; y < (y0+other.get_height()); y++) {
+            for (unsigned int x = x0; x < (x0+other.get_width()); x++) {
+                if (alive_only) {
+                    if (other.get(x-x0,y-y0)==Cell::ALIVE) {
+                        set(x,y,Cell::ALIVE);
+                    }
+                } else {
+                        set(x,y,other.get(x-x0,y-y0));
+                    }
+                }
+        }
+    }
 
 /**
  * Grid::rotate(rotation)

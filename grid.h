@@ -30,7 +30,7 @@ class Grid {
         unsigned int width;
         unsigned int height;
         std::vector<Cell> cells;
-        unsigned int get_index(unsigned int x, unsigned int y);
+        const unsigned int get_index(unsigned int x, unsigned int y) const;
     public:
         Grid();
         Grid(unsigned int square_size);
@@ -40,15 +40,16 @@ class Grid {
         const unsigned int get_width() const;
         const unsigned int get_height() const;
         const unsigned int get_total_cells() const;
-        const unsigned int get_alive_cells();
-        const unsigned int get_dead_cells();
+        const unsigned int get_alive_cells() const;
+        const unsigned int get_dead_cells() const;
         void resize(unsigned int square_size);
         void resize(unsigned int width, unsigned int height);
-        Cell get(unsigned int x, unsigned int y);
+        const Cell get(unsigned int x, unsigned int y) const;
         void set(unsigned int x, unsigned int y, Cell value);
         Cell operator()(unsigned int x,unsigned int y);
-        //const Cell Grid::operator()(unsigned int x,unsigned int y) const;
-        const Grid crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1);
+        const Cell operator()(unsigned int x,unsigned int y) const;
+        const Grid crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const;
+        void merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only=false);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.
