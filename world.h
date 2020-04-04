@@ -34,6 +34,9 @@ class World {
     const unsigned int get_total_cells() const;
     const unsigned int get_alive_cells() const;
     const unsigned int get_dead_cells() const;
+    const Grid &get_state() const;
+    void resize(unsigned int square_size);
+    void resize(unsigned int new_width, unsigned int new_height);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.
