@@ -204,7 +204,7 @@ const unsigned int Grid::get_alive_cells() const{
     unsigned int alive_cells = 0;
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
-            if (cells.at(get_index(x, y))==Cell::ALIVE) {
+            if (get(x,y)==Cell::ALIVE) {
                 alive_cells++;
             } 
         }
@@ -240,7 +240,7 @@ const unsigned int Grid::get_dead_cells() const{
     unsigned int dead_cells = 0;
     for (unsigned int y = 0; y < height; y++) {
         for (unsigned int x = 0; x < width; x++) {
-            if (cells.at(get_index(x, y))==Cell::DEAD) {
+            if (get(x,y)==Cell::DEAD) {
                 dead_cells++;
             } 
         }
@@ -267,17 +267,17 @@ const unsigned int Grid::get_dead_cells() const{
  */
 
 void Grid::resize(unsigned int square_size) {
-    std::vector<Cell> tempCells;
+    std::vector<Cell> temp_cells;
     for (unsigned int y = 0; y < square_size; y++) {
         for (unsigned int x = 0; x < square_size; x++) {
             if ((x<width) && (y<height)) {
-                tempCells.push_back(cells.at(get_index(x,y)));
+                temp_cells.push_back(get(x,y));
             } else {
-                tempCells.push_back(Cell::DEAD);
+                temp_cells.push_back(Cell::DEAD);
             }
         }
     }
-    this->cells=tempCells;
+    this->cells=temp_cells;
     this->width = square_size;
     this->height = square_size;
 }
@@ -304,18 +304,17 @@ void Grid::resize(unsigned int square_size) {
  */
 
 void Grid::resize(unsigned int new_width, unsigned int new_height) {
-    //80/81 line 45: vector::_M_range_check: __n (which is 64) >= this->size() (which is 64)
-    std::vector<Cell> tempCells;
+    std::vector<Cell> temp_cells;
     for (unsigned int y = 0; y < new_height; y++) {
         for (unsigned int x = 0; x < new_width; x++) {
             if ((x<width) && (y<height)) {
-                tempCells.push_back(cells.at(get_index(x,y)));
+                temp_cells.push_back(get(x,y));
             } else {
-                tempCells.push_back(Cell::DEAD);
+                temp_cells.push_back(Cell::DEAD);
             }
         }
     }
-    this->cells=tempCells;
+    this->cells=temp_cells;
     this->width = new_width;
     this->height = new_height;
 }
@@ -518,17 +517,17 @@ const Cell Grid::operator()(unsigned int x,unsigned int y) const {
  */
 
 const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const{
-    std::vector<Cell> tempCells;
-    unsigned int xdiff = x1-x0;
-    unsigned int ydiff = y1-y0;
+    std::vector<Cell> temp_cells;
+    unsigned int x_diff = x1-x0;
+    unsigned int y_diff = y1-y0;
     for (unsigned int y = y0; y < y1; y++) {
         for (unsigned int x = x0; x < x1; x++) {
-            tempCells.push_back(cells.at(get_index(x,y)));
+            temp_cells.push_back(get(x,y));
         }
     }
-    Grid newGrid = Grid(xdiff,ydiff);
-    newGrid.cells = tempCells;
-    return newGrid;
+    Grid new_grid = Grid(x_diff,y_diff);
+    new_grid.cells = temp_cells;
+    return new_grid;
 }
 
 /**
@@ -608,53 +607,53 @@ void Grid::merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only) 
 
 const Grid Grid::rotate(int _rotation) const {
     
-    std::vector<Cell> tempCells;
-    int value = _rotation % 4;
-    if (value==-1) {
-        value=3;
-    } else if (value==-3) {
-        value=1;
+    std::vector<Cell> temp_cells;
+    _rotation = _rotation % 4;
+    if (_rotation==-1) {
+        _rotation=3;
+    } else if (_rotation==-3) {
+        _rotation=1;
     }
-    value = abs(value);
+    _rotation = abs(_rotation);
     unsigned int new_width;
     unsigned int new_height;
-    if ((value==0) || (value==2)) {
+    if ((_rotation==0) || (_rotation==2)) {
         new_width=get_width();
         new_height=get_height();
     } else {
         new_width=get_height();
         new_height=get_width();
     }
-    Grid newGrid = Grid(new_width,new_height);
-    switch(value) {
+    Grid rotated_grid = Grid(new_width,new_height);
+    switch(_rotation) {
     case 0:
         {
-        newGrid = Grid(get_width(),get_height());
-        newGrid.cells = cells;
+        rotated_grid = Grid(get_width(),get_height());
+        rotated_grid.cells = cells;
         break;
         }
     case 1:
         {
-        //figure out new_width and new_height to resize newGrid (and set all to dead)
-        //so you can use newGrid.cells[] instead of newGrid.cells.pushback()
-        tempCells.resize(new_width*new_height,Cell::DEAD);
-        newGrid.cells = tempCells;
+        //figure out new_width and new_height to resize rotated_grid (and set all to dead)
+        //so you can use rotated_grid.cells[] instead of rotated_grid.cells.pushback()
+        temp_cells.resize(new_width*new_height,Cell::DEAD);
+        rotated_grid.cells = temp_cells;
         //find 1st value in row 
         
         for (unsigned int y=0; y < get_height(); y++) {
-            tempCells.clear();
+            temp_cells.clear();
             //collect all values in that row until old_width is reached (and store into vector)
             for (unsigned int x=0; x < get_width(); x++) {
-                tempCells.push_back(get(x,y));
+                temp_cells.push_back(get(x,y));
             }
             //place all from vector vertically starting at
             // new_width-1 until new_height-1 is reached
-            //newGrid.set(?,?,tempCells[?,?]);
+            //rotated_grid.set(?,?,temp_cells[?,?]);
             //i=(new_width-(y+1))
-            for (unsigned int i=0; i<newGrid.get_height(); i++) {
-                Cell front = tempCells.front();
-                newGrid.set(newGrid.get_width()-(1+y),i,front);
-                tempCells.erase(tempCells.begin());
+            for (unsigned int i=0; i<rotated_grid.get_height(); i++) {
+                Cell front = temp_cells.front();
+                rotated_grid.set(rotated_grid.get_width()-(1+y),i,front);
+                temp_cells.erase(temp_cells.begin());
             }
         } 
         
@@ -663,20 +662,20 @@ const Grid Grid::rotate(int _rotation) const {
         }
     case 2:
         {
-        newGrid = rotate(1);
-        Grid tempGrid = newGrid.rotate(1);
-        newGrid = tempGrid;
+        rotated_grid = rotate(1);
+        Grid temp_grid = rotated_grid.rotate(1);
+        rotated_grid = temp_grid;
         break;
         }
     case 3:
         {
-        newGrid = rotate(1);
-        Grid tempGrid = newGrid.rotate(1);
-        newGrid = tempGrid.rotate(1);
+        rotated_grid = rotate(1);
+        Grid temp_grid = rotated_grid.rotate(1);
+        rotated_grid = temp_grid.rotate(1);
         break;
         }
     }
-    return newGrid;
+    return rotated_grid;
 } 
 
 /**
