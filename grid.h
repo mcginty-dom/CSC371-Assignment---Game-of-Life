@@ -50,6 +50,7 @@ class Grid {
         const Cell operator()(unsigned int x,unsigned int y) const;
         const Grid crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const;
         void merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only=false);
+        const Grid rotate(int _rotation) const;
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.

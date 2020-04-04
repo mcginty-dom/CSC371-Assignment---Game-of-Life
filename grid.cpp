@@ -16,8 +16,7 @@
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include <vector>
-#include <iostream>
-
+#include <cstdlib>
 /**
  * Grid::Grid()
  *
@@ -607,6 +606,78 @@ void Grid::merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only) 
  *      Returns a copy of the grid that has been rotated.
  */
 
+const Grid Grid::rotate(int _rotation) const {
+    
+    std::vector<Cell> tempCells;
+    int value = _rotation % 4;
+    if (value==-1) {
+        value=3;
+    } else if (value==-3) {
+        value=1;
+    }
+    value = abs(value);
+    unsigned int new_width;
+    unsigned int new_height;
+    if ((value==0) || (value==2)) {
+        new_width=get_width();
+        new_height=get_height();
+    } else {
+        new_width=get_height();
+        new_height=get_width();
+    }
+    Grid newGrid = Grid(new_width,new_height);
+    switch(value) {
+    case 0:
+        {
+        newGrid = Grid(get_width(),get_height());
+        newGrid.cells = cells;
+        break;
+        }
+    case 1:
+        {
+        //figure out new_width and new_height to resize newGrid (and set all to dead)
+        //so you can use newGrid.cells[] instead of newGrid.cells.pushback()
+        tempCells.resize(new_width*new_height,Cell::DEAD);
+        newGrid.cells = tempCells;
+        //find 1st value in row 
+        
+        for (unsigned int y=0; y < get_height(); y++) {
+            tempCells.clear();
+            //collect all values in that row until old_width is reached (and store into vector)
+            for (unsigned int x=0; x < get_width(); x++) {
+                tempCells.push_back(get(x,y));
+            }
+            //place all from vector vertically starting at
+            // new_width-1 until new_height-1 is reached
+            //newGrid.set(?,?,tempCells[?,?]);
+            //i=(new_width-(y+1))
+            for (unsigned int i=0; i<newGrid.get_height(); i++) {
+                Cell front = tempCells.front();
+                newGrid.set(newGrid.get_width()-(1+y),i,front);
+                tempCells.erase(tempCells.begin());
+            }
+        } 
+        
+        
+        break;
+        }
+    case 2:
+        {
+        newGrid = rotate(1);
+        Grid tempGrid = newGrid.rotate(1);
+        newGrid = tempGrid;
+        break;
+        }
+    case 3:
+        {
+        newGrid = rotate(1);
+        Grid tempGrid = newGrid.rotate(1);
+        newGrid = tempGrid.rotate(1);
+        break;
+        }
+    }
+    return newGrid;
+} 
 
 /**
  * operator<<(output_stream, grid)
