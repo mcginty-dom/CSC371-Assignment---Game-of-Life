@@ -13,6 +13,7 @@
 // Add the minimal number of includes you need in order to declare the class.
 // #include ...
 #include <vector>
+#include <ostream>
 
 /**
  * A Cell is a char limited to two named values for Cell::DEAD and Cell::ALIVE.
@@ -51,6 +52,7 @@ class Grid {
         const Grid crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const;
         void merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only=false);
         const Grid rotate(int _rotation) const;
+        friend std::ostream &operator<<(std::ostream &os, const Grid grid);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.
