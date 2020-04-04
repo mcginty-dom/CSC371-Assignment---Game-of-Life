@@ -441,7 +441,7 @@ void Grid::set(unsigned int x, unsigned int y, Cell value){
  *      std::runtime_error or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-Cell Grid::operator()(unsigned int x,unsigned int y) {
+Cell &Grid::operator()(unsigned int x,unsigned int y) {
     Cell &value = cells[get_index(x, y)]; 
     return value;
 }
@@ -477,7 +477,7 @@ Cell Grid::operator()(unsigned int x,unsigned int y) {
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-const Cell Grid::operator()(unsigned int x,unsigned int y) const {
+const Cell &Grid::operator()(unsigned int x,unsigned int y) const {
     const Cell &value = cells[get_index(x, y)]; 
     return value;
 }
@@ -725,10 +725,10 @@ std::ostream &operator<<(std::ostream &os, const Grid grid) {
         os << '|';
         for (unsigned int x = 0; x < grid.get_width(); x++) {
             Cell value = grid.get(x,y);
-            if (value==Cell::ALIVE) {
-                os << '#';
-            } else {
+            if (value==Cell::DEAD) {
                 os << ' ';
+            } else {
+                os << '#';
             }
         }
         os << '|' << "\n";
