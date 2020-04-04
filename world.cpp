@@ -18,14 +18,14 @@
  *          - Moving off the left edge you appear on the right edge and vice versa.
  *          - Moving off the top edge you appear on the bottom edge and vice versa.
  *
- * @author YOUR_STUDENT_NUMBER
+ * @author 951939
  * @date March, 2020
  */
 #include "world.h"
 
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
-
+#include "grid.h"
 /**
  * World::World()
  *
@@ -38,6 +38,8 @@
  *
  */
 
+World::World(){
+}
 
 /**
  * World::World(square_size)
@@ -59,6 +61,10 @@
  *      The edge size to use for the width and height of the world.
  */
 
+World::World(unsigned int square_size){
+    current_state.resize(square_size);
+    next_state.resize(square_size);
+}
 
 /**
  * World::World(width, height)
@@ -76,6 +82,10 @@
  *      The height of the world.
  */
 
+World::World(unsigned int width, unsigned int height){
+    current_state.resize(width,height);
+    next_state.resize(width,height);
+}
 
 /**
  * World::World(initial_state)
@@ -97,6 +107,13 @@
  *      The state of the constructed world.
  */
 
+World::World(Grid initial_state) {
+    this->current_state = initial_state;
+    this->next_state = initial_state;
+}
+
+World::~World() {
+}
 
 /**
  * World::get_width()
@@ -122,6 +139,9 @@
  *      The width of the world.
  */
 
+const unsigned int World::get_width() const {
+    return current_state.get_width();
+}
 
 /**
  * World::get_height()
@@ -147,6 +167,9 @@
  *      The height of the world.
  */
 
+const unsigned int World::get_height() const {
+    return current_state.get_height();
+}
 
 /**
  * World::get_total_cells()
@@ -172,6 +195,9 @@
  *      The number of total cells.
  */
 
+const unsigned int World::get_total_cells() const{
+    return current_state.get_total_cells();
+}
 
 /**
  * World::get_alive_cells()
@@ -197,6 +223,9 @@
  *      The number of alive cells.
  */
 
+const unsigned int World::get_alive_cells() const{
+    return current_state.get_alive_cells();
+}
 
 /**
  * World::get_dead_cells()
@@ -222,6 +251,9 @@
  *      The number of dead cells.
  */
 
+const unsigned int World::get_dead_cells() const{
+    return current_state.get_dead_cells();
+}
 
 /**
  * World::get_state()
