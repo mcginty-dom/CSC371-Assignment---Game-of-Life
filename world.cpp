@@ -26,6 +26,7 @@
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include "grid.h"
+#include <iostream>
 /**
  * World::World()
  *
@@ -367,6 +368,52 @@ void World::resize(unsigned int new_width, unsigned int new_height){
  *      Returns the number of alive neighbours.
  */
 
+unsigned int World::count_neighbours(int x, int y, bool toroidal) {
+    unsigned int count = 0;
+    int temp_a;
+    int temp_b;
+    //from -1 to +1 y
+    //std::cout << " " << x << " " << y << std::endl;
+    for (int b=(y-1); b<=(y+1); b++) {
+        //from -1 to +1 x
+        for (int a=(x-1); a<=(x+1); a++) {
+            temp_a=a;
+            temp_b=b;
+            //std::cout << " " << b << " " << a << "|";
+            if (toroidal) {
+                if (a==-1) {
+                    temp_a=current_state.get_width()+a;
+                }
+                if (b==-1) {
+                    temp_b=current_state.get_height()+b;
+                } 
+                if (a==get_width()) {
+                    temp_a=0;
+                }
+                if (b==get_height()) {
+                    temp_b=0;
+                }
+
+            } else {
+                //fix out of bounds
+                if (((a==-1)) || (b==-1) || (a==get_width()) || (b==get_height()) ) {
+                    temp_a=x;
+                    temp_b=y;
+                }
+            }
+
+            //cell cannot be its own neighbour
+            if (!((temp_a==x) && (temp_b==y))) {
+                if (current_state.get(temp_a,temp_b)==Cell::ALIVE) {
+                    //std::cout << "Found ALIVE";
+                    count++;
+                }
+            }
+        }
+    }
+    //std::cout << count << "\n";
+    return count;
+}
 
 /**
  * World::step(toroidal)
@@ -389,6 +436,39 @@ void World::resize(unsigned int new_width, unsigned int new_height){
  *      wraps to the right edge and the top to the bottom. Defaults to false.
  */
 
+void World::step(bool toroidal) {
+    //Read current_state and write to next_state (implement with count_neighbours(x,y,toroidal))
+    //std::cout << current_state << std::endl;
+    for (unsigned int y = 0; y < (get_height()); y++) {
+        for (unsigned int x = 0; x < (get_width()); x++) {
+            unsigned int num_neighbours = count_neighbours(x,y,toroidal);
+            switch (num_neighbours) {
+                case 2:
+                {
+                    if (current_state.get(x,y)==Cell::ALIVE) {
+                        next_state.set(x,y,Cell::ALIVE);
+                    } else {
+                        next_state.set(x,y,Cell::DEAD);
+                    }
+                    break;
+                }
+                case 3:
+                {
+                    next_state.set(x,y,Cell::ALIVE);
+                    break;
+                }
+                default:
+                {
+                    next_state.set(x,y,Cell::DEAD);
+                }
+            }
+        }
+    }
+    //Swap grids
+    Grid temp = get_state();
+    current_state = next_state;
+    next_state = temp;
+}
 
 /**
  * World::advance(steps, toroidal)
@@ -403,3 +483,9 @@ void World::resize(unsigned int new_width, unsigned int new_height){
  *      Optional parameter. If true then the step will consider the grid as a torus, where the left edge
  *      wraps to the right edge and the top to the bottom. Defaults to false.
  */
+
+void World::advance(int steps, bool toroidal) {
+    for (int i=0; i<steps; i++) {
+        step(toroidal);
+    }
+}
