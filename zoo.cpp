@@ -155,6 +155,7 @@ Grid Zoo::light_weight_spaceship() {
  */
 
 Grid Zoo::load_ascii(std::string path) {
+    //TODO: VALGRIND FIX
     std::ifstream in(path);
     std::string line;
     std::getline(in,line);
@@ -207,6 +208,21 @@ Grid Zoo::load_ascii(std::string path) {
  *      Throws std::runtime_error or sub-class if the file cannot be opened.
  */
 
+void Zoo::save_ascii(std::string path, Grid grid) {
+    std::ofstream out(path);
+    out << grid.get_width() << ' ' << grid.get_height() << '\n';
+    for (unsigned int y = 0; y < grid.get_height(); y++) {
+        for (unsigned int x = 0; x < grid.get_width(); x++) {
+            if (grid.get(x,y)==Cell::ALIVE) {
+            out << '#';
+            } else {
+            out << ' ';
+            }
+        }
+        out << '\n';
+    }
+    out.close();
+}
 
 /**
  * Zoo::load_binary(path)
