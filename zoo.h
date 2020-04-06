@@ -20,6 +20,7 @@ namespace Zoo {
     Grid glider();
     Grid r_pentomino();
     Grid light_weight_spaceship();
+    Grid load_ascii(std::string path);
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.

@@ -21,12 +21,14 @@
  * @author 951939
  * @date March, 2020
  */
-#include "zoo.h"
+
 
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include "grid.h"
 #include "world.h"
+#include "zoo.h"
+#include <fstream>
 
 /**
  * Zoo::glider()
@@ -152,6 +154,29 @@ Grid Zoo::light_weight_spaceship() {
  *          - The character for a cell is not the ALIVE or DEAD character.
  */
 
+Grid Zoo::load_ascii(std::string path) {
+    std::ifstream in(path);
+    std::string line;
+    std::getline(in,line);
+    unsigned int width, height;
+    //-48 for ASCII code, casted to an unsigned int
+    width = (unsigned int) (line[0]-48);
+    height =  (unsigned int) (line[2]-48);
+    Grid grid = Grid(width,height);
+    char cell;
+    for (unsigned int y = 0; y < grid.get_height(); y++) {
+        std::getline(in,line);
+        for (unsigned int x = 0; x < grid.get_width(); x++) {
+            cell = line[x];
+            if (cell == '#') {
+                grid.set(x,y,Cell::ALIVE);
+            } else if (cell == ' ') {
+                grid.set(x,y,Cell::DEAD);
+            } 
+        }
+    }
+    return grid;
+}
 
 /**
  * Zoo::save_ascii(path, grid)
