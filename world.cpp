@@ -387,16 +387,17 @@ unsigned int World::count_neighbours(int x, int y, bool toroidal) {
                 if (b==-1) {
                     temp_b=current_state.get_height()+b;
                 } 
-                if (a==(int)get_width()) {
+                if ((unsigned int)a==get_width()) {
                     temp_a=0;
                 }
-                if (b==(int)get_height()) {
+                if ((unsigned int)b==get_height()) {
                     temp_b=0;
                 }
 
             } else {
                 //fix out of bounds
-                if (((a==-1)) || (b==-1) || (a==(int)get_width()) || (b==(int)get_height()) ) {
+                if (((a==-1)) || (b==-1) || 
+                    ((unsigned int)a==get_width()) || ((unsigned int)b==get_height()) ) {
                     temp_a=x;
                     temp_b=y;
                 }

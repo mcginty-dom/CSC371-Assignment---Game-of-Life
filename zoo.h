@@ -17,6 +17,9 @@
  * Declare the interface of the Zoo namespace for constructing lifeforms and saving and loading them from file.
  */
 namespace Zoo {
+    Grid glider();
+    Grid r_pentomino();
+    Grid light_weight_spaceship();
     // How to draw an owl:
     //      Step 1. Draw a circle.
     //      Step 2. Draw the rest of the owl.

@@ -18,13 +18,15 @@
  *                padded with zero or more 0 bits.
  *              - a 0 bit should be considered Cell::DEAD, a 1 bit should be considered Cell::ALIVE.
  *
- * @author YOUR_STUDENT_NUMBER
+ * @author 951939
  * @date March, 2020
  */
 #include "zoo.h"
 
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
+#include "grid.h"
+#include "world.h"
 
 /**
  * Zoo::glider()
@@ -47,6 +49,15 @@
  *      Returns a Grid containing a glider.
  */
 
+Grid Zoo::glider() {
+    Grid grid = Grid(3);
+    grid.set(1,0,Cell::ALIVE);
+    grid.set(2,1,Cell::ALIVE);
+    for (unsigned int x=0; x<grid.get_width(); x++) {
+        grid.set(x,2,Cell::ALIVE);
+    }
+    return grid;
+}
 
 /**
  * Zoo::r_pentomino()
@@ -69,6 +80,15 @@
  *      Returns a Grid containing a r-pentomino.
  */
 
+Grid Zoo::r_pentomino() {
+    Grid grid = Grid(3);
+    grid.set(0,1,Cell::ALIVE);
+    grid.set(2,0,Cell::ALIVE);
+    for (unsigned int y=0; y<grid.get_height(); y++) {
+        grid.set(1,y,Cell::ALIVE);
+    }
+    return grid;
+}
 
 /**
  * Zoo::light_weight_spaceship()
@@ -92,6 +112,20 @@
  *      Returns a grid containing a light weight spaceship.
  */
 
+Grid Zoo::light_weight_spaceship() {
+    Grid grid = Grid(5,4);
+    grid.set(4,0,Cell::ALIVE);
+    grid.set(4,2,Cell::ALIVE);
+    grid.set(1,0,Cell::ALIVE);
+    for (unsigned int y=1; y<grid.get_height(); y++) {
+        grid.set(0,y,Cell::ALIVE);
+    }
+    
+    for (unsigned int x=1; x<grid.get_width()-1; x++) {
+        grid.set(x,3,Cell::ALIVE);
+    }
+    return grid;
+}
 
 /**
  * Zoo::load_ascii(path)
