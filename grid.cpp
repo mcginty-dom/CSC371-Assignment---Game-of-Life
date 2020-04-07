@@ -268,19 +268,7 @@ const unsigned int Grid::get_dead_cells() const{
  */
 
 void Grid::resize(unsigned int square_size) {
-    std::vector<Cell> temp_cells;
-    for (unsigned int y = 0; y < square_size; y++) {
-        for (unsigned int x = 0; x < square_size; x++) {
-            if ((x<get_width()) && (y<get_height())) {
-                temp_cells.push_back(get(x,y));
-            } else {
-                temp_cells.push_back(Cell::DEAD);
-            }
-        }
-    }
-    this->cells=temp_cells;
-    this->width = square_size;
-    this->height = square_size;
+    resize(square_size,square_size);
 }
 
 /**
