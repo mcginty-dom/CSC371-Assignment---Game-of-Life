@@ -29,6 +29,7 @@
 #include "world.h"
 #include "zoo.h"
 #include <fstream>
+#include <iostream>
 
 /**
  * Zoo::glider()
@@ -176,6 +177,7 @@ Grid Zoo::load_ascii(std::string path) {
             } 
         }
     }
+    in.close();
     return grid;
 }
 
@@ -247,6 +249,40 @@ void Zoo::save_ascii(std::string path, Grid grid) {
  *          - The file ends unexpectedly.
  */
 
+Grid Zoo::load_binary(std::string path) {
+    Grid grid = Grid(6);
+    std::ifstream in(path, std::ifstream::binary);
+    in.seekg(0, in.end);
+    int size = in.tellg();
+    std::cout << "length: " << size << std::endl;
+    in.seekg(0, in.beg);
+    //32bit = 4byte
+    int32_t width, height;
+    char* buffer = new char [size];
+    in.read(buffer,size);
+    std::cout << "buffer: " << buffer << std::endl;
+    for (int i=0; i<size; i++) {
+        std::cout << "buffer[" << i << "]: " << buffer[i] << std::endl;
+    }
+    width = buffer[0];
+    height = buffer[4];
+    std::cout << "width: " << width << std::endl;
+    std::cout << "height: " << height << std::endl;
+    grid = Grid(width,height);
+    in.seekg(0, in.beg);
+    in.read(buffer,8);
+    in.read(buffer,size);
+    for (int i=8; i<size; i++) {
+        std::cout << "buffer[" << i << "]: " << buffer[i] << std::endl;
+    }
+    //when i % width ==0 then go to next row/y++
+     
+    //for (int y=0; y<grid.get_height(); y++) {
+        //for (int x=0; y<grid.get_width(); x++) {}}
+
+    delete[] buffer;
+    return grid;
+}
 
 /**
  * Zoo::save_binary(path, grid)
