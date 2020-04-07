@@ -50,7 +50,7 @@ class Grid {
         Cell &operator()(unsigned int x,unsigned int y);
         const Cell &operator()(unsigned int x,unsigned int y) const;
         const Grid crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const;
-        void merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only=false);
+        void merge(Grid other, int x0, int y0, bool alive_only=false);
         const Grid rotate(int _rotation) const;
         friend std::ostream &operator<<(std::ostream &os, const Grid grid);
     // How to draw an owl:

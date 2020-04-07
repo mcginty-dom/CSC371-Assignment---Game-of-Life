@@ -371,7 +371,11 @@ const unsigned int Grid::get_index(unsigned int x, unsigned int y) const{
  */
 
 const Cell Grid::get(unsigned int x, unsigned int y) const{
-    return cells.at(get_index(x, y));
+    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+        return cells.at(get_index(x, y));
+    } else {
+        throw std::runtime_error("Grid::get out of bounds exception.");
+    }
 }
 
 /**
@@ -402,7 +406,11 @@ const Cell Grid::get(unsigned int x, unsigned int y) const{
  */
 
 void Grid::set(unsigned int x, unsigned int y, Cell value){
-    cells.at(get_index(x, y)) = value;
+    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+        cells.at(get_index(x, y)) = value;
+    } else {
+        throw std::runtime_error("Grid::set out of bounds exception.");
+    }
 }
 
 /**
@@ -442,8 +450,12 @@ void Grid::set(unsigned int x, unsigned int y, Cell value){
  */
 
 Cell &Grid::operator()(unsigned int x,unsigned int y) {
-    Cell &value = cells[get_index(x, y)]; 
-    return value;
+    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+        Cell &value = cells[get_index(x, y)]; 
+        return value;
+    } else {
+        throw std::runtime_error("Grid::operator() out of bounds exception.");
+    }
 }
 
 /**
@@ -478,8 +490,12 @@ Cell &Grid::operator()(unsigned int x,unsigned int y) {
  */
 
 const Cell &Grid::operator()(unsigned int x,unsigned int y) const {
-    const Cell &value = cells[get_index(x, y)]; 
-    return value;
+    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+        const Cell &value = cells[get_index(x, y)]; 
+        return value;
+    } else {
+        throw std::runtime_error("const Grid::operator() const out of bounds exception.");
+    }
 }
 
 /**
@@ -518,17 +534,21 @@ const Cell &Grid::operator()(unsigned int x,unsigned int y) const {
  */
 
 const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const{
-    std::vector<Cell> temp_cells;
-    unsigned int x_diff = x1-x0;
-    unsigned int y_diff = y1-y0;
-    for (unsigned int y = y0; y < y1; y++) {
-        for (unsigned int x = x0; x < x1; x++) {
-            temp_cells.push_back(get(x,y));
+    if (x1>x0 && y1>y0 && x0>=0 && y0>=0 && x1<=get_width() && y1<=get_height()) {
+        std::vector<Cell> temp_cells;
+        unsigned int x_diff = x1-x0;
+        unsigned int y_diff = y1-y0;
+        for (unsigned int y = y0; y < y1; y++) {
+            for (unsigned int x = x0; x < x1; x++) {
+                temp_cells.push_back(get(x,y));
+            }
         }
+        Grid new_grid = Grid(x_diff,y_diff);
+        new_grid.cells = temp_cells;
+        return new_grid;
+    } else {
+        throw std::runtime_error("Grid::crop exception.");
     }
-    Grid new_grid = Grid(x_diff,y_diff);
-    new_grid.cells = temp_cells;
-    return new_grid;
 }
 
 /**
@@ -569,18 +589,23 @@ const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned i
  *      std::exception or sub-class if the other grid being placed does not fit within the bounds of the current grid.
  */
 
-void Grid::merge(Grid other, unsigned int x0, unsigned int y0, bool alive_only) {
-    for (unsigned int y = y0; y < (y0+other.get_height()); y++) {
-            for (unsigned int x = x0; x < (x0+other.get_width()); x++) {
-                if (alive_only) {
-                    if (other.get(x-x0,y-y0)==Cell::ALIVE) {
-                        set(x,y,Cell::ALIVE);
+void Grid::merge(Grid other, int x0, int y0, bool alive_only) {
+    if (x0>=0 && y0>=0 && x0+other.get_width()<=get_width() 
+        && y0+other.get_height()<=get_height()) {
+        for (unsigned int y = y0; y < (y0+other.get_height()); y++) {
+                for (unsigned int x = x0; x < (x0+other.get_width()); x++) {
+                    if (alive_only) {
+                        if (other.get(x-x0,y-y0)==Cell::ALIVE) {
+                            set(x,y,Cell::ALIVE);
+                        }
+                    } else {
+                            set(x,y,other.get(x-x0,y-y0));
+                        }
                     }
-                } else {
-                        set(x,y,other.get(x-x0,y-y0));
-                    }
-                }
-        }
+            }
+    } else {
+        throw std::runtime_error("Grid::merge exception.");
+    }
     }
 
 /**
