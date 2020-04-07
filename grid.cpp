@@ -168,13 +168,7 @@ const unsigned int Grid::get_height() const {
  */
 
 const unsigned int Grid::get_total_cells() const {
-    unsigned int total_cells = 0;
-    for (unsigned int y = 0; y < get_height(); y++) {
-        for (unsigned int x = 0; x < get_width(); x++) {
-            total_cells++;
-        }
-    }
-    return total_cells;
+    return get_alive_cells()+get_dead_cells();
 }
 
 /**
@@ -395,7 +389,7 @@ const Cell Grid::get(unsigned int x, unsigned int y) const{
 
 void Grid::set(unsigned int x, unsigned int y, Cell value){
     if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
-        cells.at(get_index(x, y)) = value;
+        operator()(x,y) = value;
     } else {
         throw std::runtime_error("Grid::set out of bounds exception.");
     }
