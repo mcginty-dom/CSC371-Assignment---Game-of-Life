@@ -27,6 +27,7 @@
 // #include ...
 #include "grid.h"
 #include <iostream>
+#include <utility>
 /**
  * World::World()
  *
@@ -64,7 +65,7 @@ World::World(){
 
 World::World(unsigned int square_size){
     current_state.resize(square_size);
-    next_state.resize(square_size);
+    this->next_state = current_state;
 }
 
 /**
@@ -85,7 +86,7 @@ World::World(unsigned int square_size){
 
 World::World(unsigned int width, unsigned int height){
     current_state.resize(width,height);
-    next_state.resize(width,height);
+    this->next_state = current_state;
 }
 
 /**
@@ -110,7 +111,7 @@ World::World(unsigned int width, unsigned int height){
 
 World::World(Grid initial_state) {
     this->current_state = initial_state;
-    this->next_state = initial_state;
+    this->next_state = current_state;
 }
 
 World::~World() {
@@ -306,7 +307,7 @@ const Grid &World::get_state() const {
  */
 
 void World::resize(unsigned int square_size){
-    current_state.resize(square_size);
+    resize(square_size,square_size);
 }
 
 /**
@@ -369,51 +370,45 @@ void World::resize(unsigned int new_width, unsigned int new_height){
  */
 
 unsigned int World::count_neighbours(int x, int y, bool toroidal) {
-    unsigned int count = 0;
-    int temp_a;
-    int temp_b;
+    unsigned int num_neighbours = 0;
+    int temp_x, temp_y;
     //from -1 to +1 y
-    //std::cout << " " << x << " " << y << std::endl;
     for (int b=(y-1); b<=(y+1); b++) {
         //from -1 to +1 x
         for (int a=(x-1); a<=(x+1); a++) {
-            temp_a=a;
-            temp_b=b;
-            //std::cout << " " << b << " " << a << "|";
+            temp_x=a;
+            temp_y=b;
             if (toroidal) {
                 if (a==-1) {
-                    temp_a=current_state.get_width()+a;
+                    temp_x=get_width()+a;
                 }
                 if (b==-1) {
-                    temp_b=current_state.get_height()+b;
+                    temp_y=get_height()+b;
                 } 
                 if ((unsigned int)a==get_width()) {
-                    temp_a=0;
+                    temp_x=0;
                 }
                 if ((unsigned int)b==get_height()) {
-                    temp_b=0;
+                    temp_y=0;
                 }
 
             } else {
                 //fix out of bounds
                 if (((a==-1)) || (b==-1) || 
                     ((unsigned int)a==get_width()) || ((unsigned int)b==get_height()) ) {
-                    temp_a=x;
-                    temp_b=y;
+                    temp_x=x;
+                    temp_y=y;
                 }
             }
 
             //cell cannot be its own neighbour
-            if (!((temp_a==x) && (temp_b==y))) {
-                if (current_state.get(temp_a,temp_b)==Cell::ALIVE) {
-                    //std::cout << "Found ALIVE";
-                    count++;
-                }
+            if (!((temp_x==x) && (temp_y==y)) 
+                && (current_state.get(temp_x,temp_y)==Cell::ALIVE)) {
+                num_neighbours++;
             }
         }
     }
-    //std::cout << count << "\n";
-    return count;
+    return num_neighbours;
 }
 
 /**
@@ -438,37 +433,18 @@ unsigned int World::count_neighbours(int x, int y, bool toroidal) {
  */
 
 void World::step(bool toroidal) {
-    //Read current_state and write to next_state (implement with count_neighbours(x,y,toroidal))
-    //std::cout << current_state << std::endl;
-    for (unsigned int y = 0; y < (get_height()); y++) {
-        for (unsigned int x = 0; x < (get_width()); x++) {
+    for (unsigned int y = 0; y < get_height(); y++) {
+        for (unsigned int x = 0; x < get_width(); x++) {
             unsigned int num_neighbours = count_neighbours(x,y,toroidal);
-            switch (num_neighbours) {
-                case 2:
-                {
-                    if (current_state.get(x,y)==Cell::ALIVE) {
-                        next_state.set(x,y,Cell::ALIVE);
-                    } else {
-                        next_state.set(x,y,Cell::DEAD);
-                    }
-                    break;
-                }
-                case 3:
-                {
-                    next_state.set(x,y,Cell::ALIVE);
-                    break;
-                }
-                default:
-                {
-                    next_state.set(x,y,Cell::DEAD);
-                }
+            if ((num_neighbours==2 && current_state.get(x,y)==Cell::ALIVE) 
+                || (num_neighbours==3)) {
+                next_state.set(x,y,Cell::ALIVE);
+            } else {
+                next_state.set(x,y,Cell::DEAD);
             }
         }
     }
-    //Swap grids
-    Grid temp = get_state();
-    current_state = next_state;
-    next_state = temp;
+    std::swap(current_state,next_state);
 }
 
 /**
