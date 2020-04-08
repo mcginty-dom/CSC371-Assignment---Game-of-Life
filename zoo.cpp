@@ -263,12 +263,10 @@ Grid Zoo::load_binary(std::string path) {
         num_bytes++;
     }
     //std::cout << num_bytes;
-    char byte;
     std::vector<Cell> cells;
     for (int i=0; i<num_bytes; i++) {
-        byte = in.get();
         //std::cout << byte;
-        std::bitset<8> buffer(byte);
+        std::bitset<8> buffer(in.get());
         for (int z=0; z<8; z++) {
             if (buffer.test(z)) {
                 cells.push_back(Cell::ALIVE);
@@ -282,8 +280,7 @@ Grid Zoo::load_binary(std::string path) {
     //std::cout << std::endl << "vector size: " << cells.size() << std::endl;
     for (unsigned int y=0; y<grid.get_height(); y++) {
         for (unsigned int x=0; x<grid.get_width(); x++) {
-            Cell value = cells[x+(y*grid.get_width())];
-            grid.set(x,y,value);
+            grid.set(x,y,cells[x+(y*grid.get_width())]);
         }
     }
     //std::cout << grid;
@@ -320,3 +317,43 @@ Grid Zoo::load_binary(std::string path) {
  *      Throws std::runtime_error or sub-class if the file cannot be opened.
  */
 
+void Zoo::save_binary(std::string path, Grid grid) {
+    std::ofstream out(path);
+    int32_t width = (int32_t) grid.get_width();
+    int32_t height = (int32_t) grid.get_height();
+    out.write((char*) &width, 4);
+    out.write((char*) &height, 4);
+    //std::cout << byte;
+    //create a counter to go to 8 everytime it accesses a new coordinate, at 8 write and reset
+    std::bitset<8> buffer("        ", 8, '#', ' ');
+    int counter = 0;
+    for (unsigned int y=0; y<grid.get_height(); y++) {
+        for (unsigned int x=0; x<grid.get_width(); x++) {
+            if (grid.get(x,y)==Cell::ALIVE) {
+                buffer.set(counter,true);
+                //std::cout << "1";
+            } else {
+                buffer.set(counter,false);
+                //std::cout << "0";
+            }
+            
+            if (counter==7) {
+                //std::cout << "writing buffer: " << buffer;
+                out.write((char*) &buffer, 1);
+                counter=0;
+
+            } else {
+                counter++;
+            }
+        }
+    }
+    if (counter!=0) {
+        while (counter<=7) {
+            //std::cout << "padding time";
+            buffer.set(counter,false);
+            counter++;
+        }
+        out.write((char*) &buffer, 1);
+    }
+    out.close();
+}
