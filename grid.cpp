@@ -16,7 +16,6 @@
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include <vector>
-#include <cstdlib>
 #include <ostream>
 /**
  * Grid::Grid()
@@ -31,7 +30,7 @@
  *
  */
 
-Grid::Grid(): width(0), height(0){
+Grid::Grid(): Grid(0) {
 }
 
 /**
@@ -58,8 +57,7 @@ Grid::Grid(): width(0), height(0){
  *      The edge size to use for the width and height of the grid.
  */
 
-Grid::Grid(unsigned int square_size): width(square_size), height(square_size){    
-    cells.resize(width*height,Cell::DEAD);
+Grid::Grid(unsigned int square_size): Grid(square_size,square_size) {    
 }
 
 /**
@@ -79,8 +77,7 @@ Grid::Grid(unsigned int square_size): width(square_size), height(square_size){
  *      The height of the grid.
  */
 
-Grid::Grid(unsigned int width, unsigned int height): 
-width(width), height(height){
+Grid::Grid(unsigned int width, unsigned int height): width(width), height(height) {
     cells.resize(width*height,Cell::DEAD);
 }
 
@@ -518,14 +515,12 @@ const Cell &Grid::operator()(unsigned int x,unsigned int y) const {
 const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned int y1) const{
     if (x1>x0 && y1>y0 && x0>=0 && y0>=0 && x1<=get_width() && y1<=get_height()) {
         std::vector<Cell> temp_cells;
-        unsigned int x_diff = x1-x0;
-        unsigned int y_diff = y1-y0;
         for (unsigned int y = y0; y < y1; y++) {
             for (unsigned int x = x0; x < x1; x++) {
                 temp_cells.push_back(get(x,y));
             }
         }
-        Grid new_grid = Grid(x_diff,y_diff);
+        Grid new_grid = Grid(x1-x0,y1-y0);
         new_grid.cells = temp_cells;
         return new_grid;
     } else {
@@ -572,16 +567,18 @@ const Grid Grid::crop(unsigned int x0,unsigned int y0,unsigned int x1,unsigned i
  */
 
 void Grid::merge(Grid other, int x0, int y0, bool alive_only) {
-    if (x0>=0 && y0>=0 && x0+other.get_width()<=get_width() 
-        && y0+other.get_height()<=get_height()) {
-        for (unsigned int y = y0; y < (y0+other.get_height()); y++) {
-                for (unsigned int x = x0; x < (x0+other.get_width()); x++) {
+    unsigned int other_width = x0+other.get_width();
+    unsigned int other_height = y0+other.get_height();
+    if (x0>=0 && y0>=0 && other_width<=get_width() && other_height<=get_height()) {
+        for (unsigned int y = y0; y < other_height; y++) {
+                for (unsigned int x = x0; x < other_width; x++) {
+                    Cell value = other.get(x-x0,y-y0);
                     if (alive_only) {
-                        if (other.get(x-x0,y-y0)==Cell::ALIVE) {
+                        if (value==Cell::ALIVE) {
                             set(x,y,Cell::ALIVE);
                         }
                     } else {
-                            set(x,y,other.get(x-x0,y-y0));
+                            set(x,y,value);
                         }
                     }
             }
@@ -614,76 +611,39 @@ void Grid::merge(Grid other, int x0, int y0, bool alive_only) {
  */
 
 const Grid Grid::rotate(int _rotation) const {
-    
-    std::vector<Cell> temp_cells;
     _rotation = _rotation % 4;
     if (_rotation==-1) {
         _rotation=3;
     } else if (_rotation==-3) {
         _rotation=1;
     }
-    _rotation = abs(_rotation);
-    unsigned int new_width;
-    unsigned int new_height;
+    _rotation = (_rotation+4) % 4;
+    Grid new_grid;
     if ((_rotation==0) || (_rotation==2)) {
-        new_width=get_width();
-        new_height=get_height();
+        new_grid = Grid(get_width(),get_height());
     } else {
-        new_width=get_height();
-        new_height=get_width();
+        new_grid = Grid(get_height(),get_width());
     }
-    Grid rotated_grid = Grid(new_width,new_height);
-    switch(_rotation) {
-    case 0:
-        {
-        rotated_grid = Grid(get_width(),get_height());
-        rotated_grid.cells = cells;
-        break;
-        }
-    case 1:
-        {
-        //figure out new_width and new_height to resize rotated_grid (and set all to dead)
-        //so you can use rotated_grid.cells[] instead of rotated_grid.cells.pushback()
-        temp_cells.resize(new_width*new_height,Cell::DEAD);
-        rotated_grid.cells = temp_cells;
-        //find 1st value in row 
-        
-        for (unsigned int y=0; y < get_height(); y++) {
-            temp_cells.clear();
-            //collect all values in that row until old_width is reached (and store into vector)
-            for (unsigned int x=0; x < get_width(); x++) {
-                temp_cells.push_back(get(x,y));
+    if (_rotation==0) {
+        new_grid = *this;
+    } else {
+        for (unsigned int y=0; y < new_grid.get_height(); y++) {
+            for (unsigned int x=0; x < new_grid.get_width(); x++) {
+                Cell value;
+                unsigned int minus_x = new_grid.get_width()-(1+x);
+                unsigned int minus_y = new_grid.get_height()-(1+y);
+                if (_rotation==1) {
+                    value = (*this).get(y, minus_x);
+                } else if (_rotation==2) {
+                    value = (*this).get(minus_x, minus_y);
+                } else {
+                    value = (*this).get(minus_y, x);
+                }
+                new_grid.set(x,y,value);
             }
-            //place all from vector vertically starting at
-            // new_width-1 until new_height-1 is reached
-            //rotated_grid.set(?,?,temp_cells[?,?]);
-            //i=(new_width-(y+1))
-            for (unsigned int i=0; i<rotated_grid.get_height(); i++) {
-                Cell value = temp_cells.front();
-                rotated_grid.set(rotated_grid.get_width()-(1+y),i,value);
-                temp_cells.erase(temp_cells.begin());
-            }
-        } 
-        
-        
-        break;
-        }
-    case 2:
-        {
-        rotated_grid = rotate(1);
-        Grid temp_grid = rotated_grid.rotate(1);
-        rotated_grid = temp_grid;
-        break;
-        }
-    case 3:
-        {
-        rotated_grid = rotate(1);
-        Grid temp_grid = rotated_grid.rotate(1);
-        rotated_grid = temp_grid.rotate(1);
-        break;
         }
     }
-    return rotated_grid;
+    return new_grid;
 } 
 
 /**
