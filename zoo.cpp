@@ -29,6 +29,7 @@
 #include "world.h"
 #include "zoo.h"
 #include <fstream>
+#include <bitset>
 #include <iostream>
 
 /**
@@ -250,37 +251,43 @@ void Zoo::save_ascii(std::string path, Grid grid) {
  */
 
 Grid Zoo::load_binary(std::string path) {
-    Grid grid = Grid(6);
-    std::ifstream in(path, std::ifstream::binary);
-    in.seekg(0, in.end);
-    int size = in.tellg();
-    std::cout << "length: " << size << std::endl;
-    in.seekg(0, in.beg);
-    //32bit = 4byte
+    std::ifstream in (path);
     int32_t width, height;
-    char* buffer = new char [size];
-    in.read(buffer,size);
-    std::cout << "buffer: " << buffer << std::endl;
-    for (int i=0; i<size; i++) {
-        std::cout << "buffer[" << i << "]: " << buffer[i] << std::endl;
+    in.read((char*) &width,4);
+    in.read((char*) &height,4);
+    //std::cout << width << " " << height;
+    Grid grid = Grid(width,height);
+    //std::bitset<8> buffer;
+    int num_bytes = (width*height)/8;
+    if (((width*height)/8) % 8 != 0) {
+        num_bytes++;
     }
-    width = buffer[0];
-    height = buffer[4];
-    std::cout << "width: " << width << std::endl;
-    std::cout << "height: " << height << std::endl;
-    grid = Grid(width,height);
-    in.seekg(0, in.beg);
-    in.read(buffer,8);
-    in.read(buffer,size);
-    for (int i=8; i<size; i++) {
-        std::cout << "buffer[" << i << "]: " << buffer[i] << std::endl;
+    //std::cout << num_bytes;
+    char byte;
+    std::vector<Cell> cells;
+    for (int i=0; i<num_bytes; i++) {
+        byte = in.get();
+        //std::cout << byte;
+        std::bitset<8> buffer(byte);
+        for (int z=0; z<8; z++) {
+            if (buffer.test(z)) {
+                cells.push_back(Cell::ALIVE);
+                //std::cout << "1";
+            } else {
+                cells.push_back(Cell::DEAD);
+                //std::cout << "0";
+            }
+        }
     }
-    //when i % width ==0 then go to next row/y++
-     
-    //for (int y=0; y<grid.get_height(); y++) {
-        //for (int x=0; y<grid.get_width(); x++) {}}
-
-    delete[] buffer;
+    //std::cout << std::endl << "vector size: " << cells.size() << std::endl;
+    for (unsigned int y=0; y<grid.get_height(); y++) {
+        for (unsigned int x=0; x<grid.get_width(); x++) {
+            Cell value = cells[x+(y*grid.get_width())];
+            grid.set(x,y,value);
+        }
+    }
+    //std::cout << grid;
+    in.close();
     return grid;
 }
 
