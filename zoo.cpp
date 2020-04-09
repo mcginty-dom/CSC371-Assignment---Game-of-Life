@@ -157,29 +157,41 @@ Grid Zoo::light_weight_spaceship() {
  */
 
 Grid Zoo::load_ascii(std::string path) {
-    //TODO: VALGRIND FIX
     std::ifstream in(path);
-    std::string line;
-    std::getline(in,line);
-    unsigned int width, height;
-    //-48 for ASCII code, casted to an unsigned int
-    width = (unsigned int) (line[0]-48);
-    height =  (unsigned int) (line[2]-48);
-    Grid grid = Grid(width,height);
-    char cell;
-    for (unsigned int y = 0; y < grid.get_height(); y++) {
+    if (in.is_open()) {
+        std::string line;
         std::getline(in,line);
-        for (unsigned int x = 0; x < grid.get_width(); x++) {
-            cell = line[x];
-            if (cell == '#') {
-                grid.set(x,y,Cell::ALIVE);
-            } else if (cell == ' ') {
-                grid.set(x,y,Cell::DEAD);
-            } 
+        int width, height;
+        //-48 for ASCII code
+        width = line[0]-48;
+        height = line[2]-48;
+        if (width<0 || height<0) {
+            throw std::runtime_error("Zoo::load_ascii exception.");
         }
+        Grid grid = Grid(width,height);
+        char cell;
+        for (unsigned int y = 0; y < grid.get_height(); y++) {
+            std::getline(in,line);
+            if (line.length()!=grid.get_width()) {
+                throw std::runtime_error("Zoo::load_ascii exception.");
+            } else {
+                for (unsigned int x = 0; x < grid.get_width(); x++) {
+                    cell = line[x];
+                    if (cell == '#') {
+                        grid.set(x,y,Cell::ALIVE);
+                    } else if (cell == ' ') {
+                        grid.set(x,y,Cell::DEAD);
+                    } else {
+                        throw std::runtime_error("Zoo::load_ascii exception.");
+                    }
+                }
+            }
+        }
+        in.close();
+        return grid;
+    } else {
+        throw std::runtime_error("Zoo::load_ascii exception.");
     }
-    in.close();
-    return grid;
 }
 
 /**
@@ -256,40 +268,46 @@ void Zoo::save_ascii(std::string path, Grid grid) {
 
 Grid Zoo::load_binary(std::string path) {
     std::ifstream in (path);
-    int32_t width, height;
-    in.read((char*) &width,4);
-    in.read((char*) &height,4);
-    //std::cout << width << " " << height;
-    Grid grid = Grid(width,height);
-    //std::bitset<8> buffer;
-    int num_bytes = (width*height)/8;
-    if (((width*height)/8) % 8 != 0) {
-        num_bytes++;
-    }
-    //std::cout << num_bytes;
-    std::vector<Cell> cells;
-    for (int i=0; i<num_bytes; i++) {
-        //std::cout << byte;
-        std::bitset<8> buffer(in.get());
-        for (int z=0; z<8; z++) {
-            if (buffer.test(z)) {
-                cells.push_back(Cell::ALIVE);
-                //std::cout << "1";
+    if (in.is_open()) {
+        int32_t width, height;
+        in.read((char*) &width,4);
+        in.read((char*) &height,4);
+        //std::cout << width << " " << height;
+        Grid grid = Grid(width,height);
+        int num_bytes = (width*height)/8;
+        if (((width*height)/8) % 8 != 0) {
+            num_bytes++;
+        }
+        //std::cout << num_bytes;
+        std::vector<Cell> cells;
+        for (int i=0; i<num_bytes; i++) {
+            if (in.peek() == EOF) {
+                throw std::runtime_error("Zoo::load_binary exception.");
             } else {
-                cells.push_back(Cell::DEAD);
-                //std::cout << "0";
+                std::bitset<8> buffer(in.get());
+                for (int z=0; z<8; z++) {
+                    if (buffer.test(z)) {
+                        cells.push_back(Cell::ALIVE);
+                        //std::cout << "1";
+                    } else {
+                        cells.push_back(Cell::DEAD);
+                        //std::cout << "0";
+                    }
+                }
             }
         }
-    }
-    //std::cout << std::endl << "vector size: " << cells.size() << std::endl;
-    for (unsigned int y=0; y<grid.get_height(); y++) {
-        for (unsigned int x=0; x<grid.get_width(); x++) {
-            grid.set(x,y,cells[x+(y*grid.get_width())]);
+        //std::cout << std::endl << "vector size: " << cells.size() << std::endl;
+        for (unsigned int y=0; y<grid.get_height(); y++) {
+            for (unsigned int x=0; x<grid.get_width(); x++) {
+                grid.set(x,y,cells[x+(y*grid.get_width())]);
+            }
         }
+        //std::cout << grid;
+        in.close();
+        return grid;
+    } else {
+        throw std::runtime_error("Zoo::load_binary exception.");
     }
-    //std::cout << grid;
-    in.close();
-    return grid;
 }
 
 /**
