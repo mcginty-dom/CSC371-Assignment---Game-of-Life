@@ -40,8 +40,4 @@ class World {
     void resize(unsigned int new_width, unsigned int new_height);
     void step(bool toroidal = false);
     void advance(int steps, bool toroidal = false);
-    // How to draw an owl:
-    //      Step 1. Draw a circle.
-    //      Step 2. Draw the rest of the owl.
-
 };

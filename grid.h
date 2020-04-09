@@ -53,7 +53,4 @@ class Grid {
         void merge(Grid other, int x0, int y0, bool alive_only=false);
         const Grid rotate(int _rotation) const;
         friend std::ostream &operator<<(std::ostream &os, const Grid grid);
-    // How to draw an owl:
-    //      Step 1. Draw a circle.
-    //      Step 2. Draw the rest of the owl.
 };
