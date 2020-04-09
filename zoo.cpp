@@ -213,18 +213,22 @@ Grid Zoo::load_ascii(std::string path) {
 
 void Zoo::save_ascii(std::string path, Grid grid) {
     std::ofstream out(path);
-    out << grid.get_width() << ' ' << grid.get_height() << '\n';
-    for (unsigned int y = 0; y < grid.get_height(); y++) {
-        for (unsigned int x = 0; x < grid.get_width(); x++) {
-            if (grid.get(x,y)==Cell::ALIVE) {
-            out << '#';
-            } else {
-            out << ' ';
+    if (out.is_open()) {
+        out << grid.get_width() << ' ' << grid.get_height() << '\n';
+        for (unsigned int y = 0; y < grid.get_height(); y++) {
+            for (unsigned int x = 0; x < grid.get_width(); x++) {
+                if (grid.get(x,y)==Cell::ALIVE) {
+                out << '#';
+                } else {
+                out << ' ';
+                }
             }
+            out << '\n';
         }
-        out << '\n';
+        out.close();
+    } else {
+        throw std::runtime_error("Zoo::save_ascii exception");
     }
-    out.close();
 }
 
 /**
@@ -319,41 +323,45 @@ Grid Zoo::load_binary(std::string path) {
 
 void Zoo::save_binary(std::string path, Grid grid) {
     std::ofstream out(path);
-    int32_t width = (int32_t) grid.get_width();
-    int32_t height = (int32_t) grid.get_height();
-    out.write((char*) &width, 4);
-    out.write((char*) &height, 4);
-    //std::cout << byte;
-    //create a counter to go to 8 everytime it accesses a new coordinate, at 8 write and reset
-    std::bitset<8> buffer("        ", 8, '#', ' ');
-    int counter = 0;
-    for (unsigned int y=0; y<grid.get_height(); y++) {
-        for (unsigned int x=0; x<grid.get_width(); x++) {
-            if (grid.get(x,y)==Cell::ALIVE) {
-                buffer.set(counter,true);
-                //std::cout << "1";
-            } else {
-                buffer.set(counter,false);
-                //std::cout << "0";
-            }
-            
-            if (counter==7) {
-                //std::cout << "writing buffer: " << buffer;
-                out.write((char*) &buffer, 1);
-                counter=0;
+    if (out.is_open()) {
+        int32_t width = (int32_t) grid.get_width();
+        int32_t height = (int32_t) grid.get_height();
+        out.write((char*) &width, 4);
+        out.write((char*) &height, 4);
+        //std::cout << byte;
+        //create a counter to go to 8 everytime it accesses a new coordinate, at 8 write and reset
+        std::bitset<8> buffer("        ", 8, '#', ' ');
+        int counter = 0;
+        for (unsigned int y=0; y<grid.get_height(); y++) {
+            for (unsigned int x=0; x<grid.get_width(); x++) {
+                if (grid.get(x,y)==Cell::ALIVE) {
+                    buffer.set(counter,true);
+                    //std::cout << "1";
+                } else {
+                    buffer.set(counter,false);
+                    //std::cout << "0";
+                }
+                
+                if (counter==7) {
+                    //std::cout << "writing buffer: " << buffer;
+                    out.write((char*) &buffer, 1);
+                    counter=0;
 
-            } else {
+                } else {
+                    counter++;
+                }
+            }
+        }
+        if (counter!=0) {
+            while (counter<=7) {
+                //std::cout << "padding time";
+                buffer.set(counter,false);
                 counter++;
             }
+            out.write((char*) &buffer, 1);
         }
+        out.close();
+    } else {
+        throw std::runtime_error("Zoo::save_binary exception.");
     }
-    if (counter!=0) {
-        while (counter<=7) {
-            //std::cout << "padding time";
-            buffer.set(counter,false);
-            counter++;
-        }
-        out.write((char*) &buffer, 1);
-    }
-    out.close();
 }
