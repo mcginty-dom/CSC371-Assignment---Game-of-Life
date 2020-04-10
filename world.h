@@ -23,21 +23,21 @@ class World {
     private:
     Grid current_state;
     Grid next_state;
-    unsigned int count_neighbours(int x, int y, bool toroidal);
+    unsigned int count_neighbours(const int x, const int y, const bool toroidal);
     public:
     World();
-    World(unsigned int square_size);
-    World(unsigned int width, unsigned int height);
-    World(Grid initial_state);
+    World(const unsigned int square_size);
+    World(const unsigned int width, const unsigned int height);
+    World(const Grid initial_state);
     ~World();
-    const unsigned int get_width() const;
-    const unsigned int get_height() const;
-    const unsigned int get_total_cells() const;
-    const unsigned int get_alive_cells() const;
-    const unsigned int get_dead_cells() const;
+    unsigned int get_width() const;
+    unsigned int get_height() const;
+    unsigned int get_total_cells() const;
+    unsigned int get_alive_cells() const;
+    unsigned int get_dead_cells() const;
     const Grid &get_state() const;
-    void resize(unsigned int square_size);
-    void resize(unsigned int new_width, unsigned int new_height);
-    void step(bool toroidal = false);
-    void advance(int steps, bool toroidal = false);
+    void resize(const unsigned int square_size);
+    void resize(const unsigned int new_width, const unsigned int new_height);
+    void step(const bool toroidal = false);
+    void advance(const int steps, const bool toroidal = false);
 };

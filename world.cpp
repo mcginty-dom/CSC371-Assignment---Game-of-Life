@@ -26,8 +26,6 @@
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include "grid.h"
-#include <iostream>
-#include <utility>
 /**
  * World::World()
  *
@@ -40,7 +38,7 @@
  *
  */
 
-World::World(){
+World::World(): World(0) {
 }
 
 /**
@@ -63,9 +61,7 @@ World::World(){
  *      The edge size to use for the width and height of the world.
  */
 
-World::World(unsigned int square_size){
-    current_state.resize(square_size);
-    this->next_state = current_state;
+World::World(const unsigned int square_size): World(square_size,square_size) {
 }
 
 /**
@@ -84,8 +80,10 @@ World::World(unsigned int square_size){
  *      The height of the world.
  */
 
-World::World(unsigned int width, unsigned int height){
+World::World(const unsigned int width, const unsigned int height){
+    //calls grid::resize() to pad current state with dead cells
     current_state.resize(width,height);
+    //copies current_state for initialization
     this->next_state = current_state;
 }
 
@@ -109,9 +107,10 @@ World::World(unsigned int width, unsigned int height){
  *      The state of the constructed world.
  */
 
-World::World(Grid initial_state) {
+World::World(const Grid initial_state) {
+    //sets both grids to be grid parameter
     this->current_state = initial_state;
-    this->next_state = current_state;
+    this->next_state = initial_state;
 }
 
 World::~World() {
@@ -141,7 +140,7 @@ World::~World() {
  *      The width of the world.
  */
 
-const unsigned int World::get_width() const {
+unsigned int World::get_width() const {
     return current_state.get_width();
 }
 
@@ -169,7 +168,7 @@ const unsigned int World::get_width() const {
  *      The height of the world.
  */
 
-const unsigned int World::get_height() const {
+unsigned int World::get_height() const {
     return current_state.get_height();
 }
 
@@ -197,7 +196,7 @@ const unsigned int World::get_height() const {
  *      The number of total cells.
  */
 
-const unsigned int World::get_total_cells() const{
+unsigned int World::get_total_cells() const{
     return current_state.get_total_cells();
 }
 
@@ -225,7 +224,7 @@ const unsigned int World::get_total_cells() const{
  *      The number of alive cells.
  */
 
-const unsigned int World::get_alive_cells() const{
+unsigned int World::get_alive_cells() const{
     return current_state.get_alive_cells();
 }
 
@@ -253,7 +252,7 @@ const unsigned int World::get_alive_cells() const{
  *      The number of dead cells.
  */
 
-const unsigned int World::get_dead_cells() const{
+unsigned int World::get_dead_cells() const{
     return current_state.get_dead_cells();
 }
 
@@ -307,6 +306,7 @@ const Grid &World::get_state() const {
  */
 
 void World::resize(unsigned int square_size){
+    //uses resize function below to remove duplication of code
     resize(square_size,square_size);
 }
 
@@ -333,7 +333,8 @@ void World::resize(unsigned int square_size){
  *      The new height for the grid.
  */
 
-void World::resize(unsigned int new_width, unsigned int new_height){
+void World::resize(const unsigned int new_width, const unsigned int new_height){
+    //uses grid resize to remove duplication of code
     current_state.resize(new_width,new_height);
 }
 
@@ -369,16 +370,17 @@ void World::resize(unsigned int new_width, unsigned int new_height){
  *      Returns the number of alive neighbours.
  */
 
-unsigned int World::count_neighbours(int x, int y, bool toroidal) {
+unsigned int World::count_neighbours(const int x, const int y, const bool toroidal) {
     unsigned int num_neighbours = 0;
     int temp_x, temp_y;
-    //from -1 to +1 y
+    //loops through -1 to +1 around cell x,y parameter
     for (int b=(y-1); b<=(y+1); b++) {
-        //from -1 to +1 x
         for (int a=(x-1); a<=(x+1); a++) {
             temp_x=a;
             temp_y=b;
+            //if toroidal then
             if (toroidal) {
+                //if out of bounds then change x/y to be a valid coordinate on other side of grid
                 if (a==-1) {
                     temp_x=get_width()+a;
                 }
@@ -391,9 +393,9 @@ unsigned int World::count_neighbours(int x, int y, bool toroidal) {
                 if ((unsigned int)b==get_height()) {
                     temp_y=0;
                 }
-
+            //else not toroidal
             } else {
-                //fix out of bounds
+                //if out of bounds then set coordinates to cell x,y parameter
                 if (((a==-1)) || (b==-1) || 
                     ((unsigned int)a==get_width()) || ((unsigned int)b==get_height()) ) {
                     temp_x=x;
@@ -401,13 +403,16 @@ unsigned int World::count_neighbours(int x, int y, bool toroidal) {
                 }
             }
 
-            //cell cannot be its own neighbour
+            //if temp x,y are not equal to cell x,y parameter and temp x,y cell is alive then 
+            //i.e. a cell cannot be its own neighbour
             if (!((temp_x==x) && (temp_y==y)) 
                 && (current_state.get(temp_x,temp_y)==Cell::ALIVE)) {
+                //number of neighbours increments
                 num_neighbours++;
             }
         }
     }
+    //returns total number of neighbours
     return num_neighbours;
 }
 
@@ -432,18 +437,25 @@ unsigned int World::count_neighbours(int x, int y, bool toroidal) {
  *      wraps to the right edge and the top to the bottom. Defaults to false.
  */
 
-void World::step(bool toroidal) {
+void World::step(const bool toroidal) {
+    //loops through x,y of current grid
     for (unsigned int y = 0; y < get_height(); y++) {
         for (unsigned int x = 0; x < get_width(); x++) {
+            //calculates number of neighbours a cell has
             unsigned int num_neighbours = count_neighbours(x,y,toroidal);
+            //if 2 neighbours and alive or 3 neighbours then
             if ((num_neighbours==2 && current_state.get(x,y)==Cell::ALIVE) 
                 || (num_neighbours==3)) {
+                //sets x,y of next state alive 
                 next_state.set(x,y,Cell::ALIVE);
+            //else
             } else {
+                //sets x,y of next state dead
                 next_state.set(x,y,Cell::DEAD);
             }
         }
     }
+    //swaps current and next state in O(1) time, without invoking a copy
     std::swap(current_state,next_state);
 }
 
@@ -461,7 +473,8 @@ void World::step(bool toroidal) {
  *      wraps to the right edge and the top to the bottom. Defaults to false.
  */
 
-void World::advance(int steps, bool toroidal) {
+void World::advance(const int steps, const bool toroidal) {
+    //loops through number of steps parameter
     for (int i=0; i<steps; i++) {
         step(toroidal);
     }
