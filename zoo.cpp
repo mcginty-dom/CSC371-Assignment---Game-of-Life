@@ -21,16 +21,13 @@
  * @author 951939
  * @date March, 2020
  */
-
+#include "zoo.h"
 
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include "grid.h"
-#include "world.h"
-#include "zoo.h"
 #include <fstream>
 #include <bitset>
-#include <iostream>
 
 /**
  * Zoo::glider()
@@ -156,7 +153,7 @@ Grid Zoo::light_weight_spaceship() {
  *          - The character for a cell is not the ALIVE or DEAD character.
  */
 
-Grid Zoo::load_ascii(std::string path) {
+Grid Zoo::load_ascii(const std::string path) {
     std::ifstream in(path);
     if (in.is_open()) {
         std::string line;
@@ -223,7 +220,7 @@ Grid Zoo::load_ascii(std::string path) {
  *      Throws std::runtime_error or sub-class if the file cannot be opened.
  */
 
-void Zoo::save_ascii(std::string path, Grid grid) {
+void Zoo::save_ascii(const std::string path, const Grid grid) {
     std::ofstream out(path);
     if (out.is_open()) {
         out << grid.get_width() << ' ' << grid.get_height() << '\n';
@@ -266,7 +263,7 @@ void Zoo::save_ascii(std::string path, Grid grid) {
  *          - The file ends unexpectedly.
  */
 
-Grid Zoo::load_binary(std::string path) {
+Grid Zoo::load_binary(const std::string path) {
     std::ifstream in (path);
     if (in.is_open()) {
         int32_t width, height;
@@ -339,7 +336,7 @@ Grid Zoo::load_binary(std::string path) {
  *      Throws std::runtime_error or sub-class if the file cannot be opened.
  */
 
-void Zoo::save_binary(std::string path, Grid grid) {
+void Zoo::save_binary(const std::string path, const Grid grid) {
     std::ofstream out(path);
     if (out.is_open()) {
         int32_t width = (int32_t) grid.get_width();
