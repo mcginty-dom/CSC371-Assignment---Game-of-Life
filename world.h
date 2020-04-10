@@ -26,9 +26,9 @@ class World {
     unsigned int count_neighbours(const int x, const int y, const bool toroidal);
     public:
     World();
-    World(const unsigned int square_size);
+    explicit World(const unsigned int square_size);
     World(const unsigned int width, const unsigned int height);
-    World(const Grid initial_state);
+    explicit World(const Grid initial_state);
     ~World();
     unsigned int get_width() const;
     unsigned int get_height() const;
