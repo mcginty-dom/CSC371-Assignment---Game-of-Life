@@ -27,7 +27,6 @@
 // #include ...
 #include "grid.h"
 #include <fstream>
-#include <bitset>
 
 /**
  * Zoo::glider()
@@ -51,6 +50,7 @@
  */
 
 Grid Zoo::glider() {
+    //Creates a grid and sets certain values to be alive for the grid to contain a glider
     Grid grid = Grid(3);
     grid.set(1,0,Cell::ALIVE);
     grid.set(2,1,Cell::ALIVE);
@@ -82,6 +82,7 @@ Grid Zoo::glider() {
  */
 
 Grid Zoo::r_pentomino() {
+    //Creates a grid and sets certain values to be alive for the grid to contain a r-pentomino
     Grid grid = Grid(3);
     grid.set(0,1,Cell::ALIVE);
     grid.set(2,0,Cell::ALIVE);
@@ -114,6 +115,8 @@ Grid Zoo::r_pentomino() {
  */
 
 Grid Zoo::light_weight_spaceship() {
+    //Creates a grid and sets certain values to be alive for the grid to contain a light weight
+    //spaceship
     Grid grid = Grid(5,4);
     grid.set(4,0,Cell::ALIVE);
     grid.set(4,2,Cell::ALIVE);
@@ -154,40 +157,52 @@ Grid Zoo::light_weight_spaceship() {
  */
 
 Grid Zoo::load_ascii(const std::string path) {
+    //opens file and if file exists then
     std::ifstream in(path);
     if (in.is_open()) {
+        //gets the first line to set width and height of the grid
         std::string line;
         std::getline(in,line);
-        int width, height;
-        //-48 for ASCII code
+        unsigned int width, height;
+        //-48 for ASCII code (char to int conversion)
         width = line[0]-48;
         height = line[2]-48;
+        //if width or height are negative then throw exception
         if (width<0 || height<0) {
-            throw std::runtime_error("Zoo::load_ascii exception.");
+            throw std::domain_error("Zoo::load_ascii negative width/height.");
         }
+        //creates grid and loops through x,y on said grid
         Grid grid = Grid(width,height);
         char cell;
         for (unsigned int y = 0; y < grid.get_height(); y++) {
+            //for every y increment, get a new line from ifstream
             std::getline(in,line);
+            //if the length of the line does not equal the width of the grid then throw exception
             if (line.length()!=grid.get_width()) {
-                throw std::runtime_error("Zoo::load_ascii exception.");
+                throw std::length_error("Zoo::load_ascii line too short/too long.");
             } else {
+                //for every x increment, get a char from the line string
                 for (unsigned int x = 0; x < grid.get_width(); x++) {
                     cell = line[x];
+                    //if char is a hash then set x,y on grid to be alive
                     if (cell == '#') {
                         grid.set(x,y,Cell::ALIVE);
+                    //else if char is a space then set x,y on grive to be dead
                     } else if (cell == ' ') {
                         grid.set(x,y,Cell::DEAD);
+                    //else throw exception
                     } else {
-                        throw std::runtime_error("Zoo::load_ascii exception.");
+                        throw std::domain_error("Zoo::load_ascii unrecognized character.");
                     }
                 }
             }
         }
+        //close ifstream to prevent memory leaks and return grid
         in.close();
         return grid;
+    //else throw exception
     } else {
-        throw std::runtime_error("Zoo::load_ascii exception.");
+        throw std::invalid_argument("Zoo::load_ascii file does not exist.");
     }
 }
 
@@ -221,22 +236,30 @@ Grid Zoo::load_ascii(const std::string path) {
  */
 
 void Zoo::save_ascii(const std::string path, const Grid grid) {
+    //opens file and if file exists then
     std::ofstream out(path);
     if (out.is_open()) {
+        //outputs width and height of grid parameter into first line of the file
         out << grid.get_width() << ' ' << grid.get_height() << '\n';
+        //loops through x,y of grid parameter
         for (unsigned int y = 0; y < grid.get_height(); y++) {
             for (unsigned int x = 0; x < grid.get_width(); x++) {
+                //if x,y on grid is alive then output a hash
                 if (grid.get(x,y)==Cell::ALIVE) {
                 out << '#';
+                //else output a space
                 } else {
                 out << ' ';
                 }
             }
+            //places a new line character whenever the x loop is finished (a row has been made)
             out << '\n';
         }
+        //closes file to prevent memory leaks
         out.close();
+    //else throw exception
     } else {
-        throw std::runtime_error("Zoo::save_ascii exception");
+        throw std::invalid_argument("Zoo::save_ascii file does not exist.");
     }
 }
 
@@ -264,48 +287,56 @@ void Zoo::save_ascii(const std::string path, const Grid grid) {
  */
 
 Grid Zoo::load_binary(const std::string path) {
+    //opens file and if exists then
     std::ifstream in (path);
     if (in.is_open()) {
-        int32_t width, height;
-        in.read((char*) &width,4);
-        in.read((char*) &height,4);
-        //std::cout << width << " " << height;
+        //sets width and height of grid (4 byte char* -> 4 byte unsigned ints) and creates grid
+        unsigned int width, height;
+        in.read((char*) &width, 4);
+        in.read((char*) &height, 4);
         Grid grid = Grid(width,height);
-        int num_bytes = (width*height)/8;
-        if (((width*height)/8) % 8 != 0) {
-            num_bytes++;
-        }
-        //std::cout << num_bytes;
-        std::vector<Cell> cells;
-        for (int i=0; i<num_bytes; i++) {
-            if (in.peek() == EOF) {
-                throw std::runtime_error("Zoo::load_binary exception.");
-            } else {
-                std::bitset<8> buffer(in.get());
-                for (int z=0; z<8; z++) {
-                    if (buffer.test(z)) {
-                        cells.push_back(Cell::ALIVE);
-                        //std::cout << "1";
-                    } else {
-                        cells.push_back(Cell::DEAD);
-                        //std::cout << "0";
+        //idx increments only during the for loop that loops through 0 to 7 bits of char byte
+        unsigned int idx = 0;
+        char byte;
+        //calculates number of bits to load
+        unsigned int num_bits = grid.get_width()*grid.get_height();
+        //while the number of bits has not been reached
+        while (idx<num_bits) {
+            //reads in 8 bits into the char byte
+            in.read(&byte, 1);
+            //loops through 0 to 7 bits of the char byte
+            for (unsigned int i=0; i<8; i++) {
+                //if no (error) state flags set then
+                if (in.good()) {
+                    //if the number of bits has not been reached yet then
+                    if (idx<num_bits) {
+                        //calculates from idx to x,y
+                        unsigned int x = idx % grid.get_width();
+                        unsigned int y = (idx-x) / grid.get_width();
+                        //performs a right shift and use a bitwise AND to get value of a bit
+                        if ((byte >> i) & 1U) {
+                            grid.set(x,y,Cell::ALIVE);
+                        } else {
+                            grid.set(x,y,Cell::DEAD);
+                        }
+                        //increments number of bits reached
+                        idx++;
                     }
+                //else throw exception
+                } else {
+                    throw std::runtime_error("Zoo::load_binary EOF reached too early.");
                 }
             }
         }
-        //std::cout << std::endl << "vector size: " << cells.size() << std::endl;
-        for (unsigned int y=0; y<grid.get_height(); y++) {
-            for (unsigned int x=0; x<grid.get_width(); x++) {
-                grid.set(x,y,cells[x+(y*grid.get_width())]);
-            }
-        }
-        //std::cout << grid;
+        //closes ifstream to prevent memory leaks and returns filled grid
         in.close();
         return grid;
+    //else throw exception
     } else {
-        throw std::runtime_error("Zoo::load_binary exception.");
+        throw std::invalid_argument("Zoo::load_binary file does not exist.");
     }
 }
+
 
 /**
  * Zoo::save_binary(path, grid)
@@ -337,46 +368,46 @@ Grid Zoo::load_binary(const std::string path) {
  */
 
 void Zoo::save_binary(const std::string path, const Grid grid) {
+    //opens file and if exists then
     std::ofstream out(path);
     if (out.is_open()) {
-        int32_t width = (int32_t) grid.get_width();
-        int32_t height = (int32_t) grid.get_height();
+        unsigned int width = grid.get_width();
+        unsigned int height = grid.get_height();
+        //outputs width and height of grid parameter both as 4 byte ints
         out.write((char*) &width, 4);
         out.write((char*) &height, 4);
-        //std::cout << byte;
-        //create a counter to go to 8 everytime it accesses a new coordinate, at 8 write and reset
-        std::bitset<8> buffer("        ", 8, '#', ' ');
-        int counter = 0;
-        for (unsigned int y=0; y<grid.get_height(); y++) {
-            for (unsigned int x=0; x<grid.get_width(); x++) {
-                if (grid.get(x,y)==Cell::ALIVE) {
-                    buffer.set(counter,true);
-                    //std::cout << "1";
-                } else {
-                    buffer.set(counter,false);
-                    //std::cout << "0";
+        //initialize number of bits reached and byte storage in char byte
+        unsigned int idx = 0;
+        char byte;
+        //calculates number of bits to load
+        unsigned int num_bits = grid.get_width()*grid.get_height();
+        //while the number of bits has not been reached
+        while (idx<num_bits) {
+            //loops through number of bits in char byte (0 to 7)
+            for (unsigned int i=0; i<8; i++) {
+                //calculates from idx to x,y
+                unsigned int x = idx % grid.get_width();
+                unsigned int y = (idx-x) / grid.get_width();
+                //if number of bits has not yet been reached then
+                if (idx<num_bits) {
+                    //if x,y in grid is alive then set bit by using a bitwise OR with 1 (true)
+                    if (grid.get(x,y)==Cell::ALIVE) {
+                        byte |= 1 << i;
+                    //else clear bit by using a bitwise AND on itself and NOT itself
+                    } else {
+                        byte &= ~(1 << i);
+                    }
                 }
-                
-                if (counter==7) {
-                    //std::cout << "writing buffer: " << buffer;
-                    out.write((char*) &buffer, 1);
-                    counter=0;
-
-                } else {
-                    counter++;
-                }
+                //increment number of bits reached
+                idx++;
             }
+            //outputs 8 cell values within the grid to file (8 bit = 1 byte)
+            out.write(&byte, 1);
         }
-        if (counter!=0) {
-            while (counter<=7) {
-                //std::cout << "padding time";
-                buffer.set(counter,false);
-                counter++;
-            }
-            out.write((char*) &buffer, 1);
-        }
+        //closes ofstream to prevent memory leaks
         out.close();
+    //else throw exception
     } else {
-        throw std::runtime_error("Zoo::save_binary exception.");
+        throw std::invalid_argument("Zoo::save_binary file does not exist.");
     }
 }
