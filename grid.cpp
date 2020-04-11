@@ -16,6 +16,7 @@
 // Include the minimal number of headers needed to support your implementation.
 // #include ...
 #include <ostream>
+#include <stdexcept>
 /**
  * Grid::Grid()
  *
