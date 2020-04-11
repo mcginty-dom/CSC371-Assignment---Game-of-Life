@@ -392,10 +392,10 @@ void Zoo::save_binary(const std::string path, const Grid grid) {
                 if (idx<num_bits) {
                     //if x,y in grid is alive then set bit by using a bitwise OR with 1 (true)
                     if (grid.get(x,y)==Cell::ALIVE) {
-                        byte |= 1 << i;
+                        byte |= 1U << i;
                     //else clear bit by using a bitwise AND on itself and NOT itself
                     } else {
-                        byte &= ~(1 << i);
+                        byte &= ~(1U << i);
                     }
                 }
                 //increment number of bits reached
