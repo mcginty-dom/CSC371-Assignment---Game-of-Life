@@ -372,47 +372,42 @@ void World::resize(const unsigned int new_width, const unsigned int new_height){
 
 unsigned int World::count_neighbours(const int x, const int y, const bool toroidal) {
     unsigned int num_neighbours = 0;
-    int temp_x, temp_y;
+    int new_x, new_y;
     //loops through -1 to +1 around cell x,y parameter
-    for (int b=(y-1); b<=(y+1); b++) {
-        for (int a=(x-1); a<=(x+1); a++) {
-            temp_x=a;
-            temp_y=b;
-            //if toroidal then
+    for (int column=(y-1); column<=(y+1); column++) {
+        for (int row=(x-1); row<=(x+1); row++) {
+            new_x = row;
+            new_y = column;
+
+            //if toroidal and out of bounds then wrap around the grid accordingly
             if (toroidal) {
-                //if out of bounds then change x/y to be a valid coordinate on other side of grid
-                if (a==-1) {
-                    temp_x=get_width()+a;
+                if (row<=-1) {
+                    new_x=get_width()+row;
+                } else if (row>=(int) get_width()) {
+                    new_x=0+(row-get_width());
                 }
-                if (b==-1) {
-                    temp_y=get_height()+b;
-                } 
-                if ((unsigned int)a==get_width()) {
-                    temp_x=0;
-                }
-                if ((unsigned int)b==get_height()) {
-                    temp_y=0;
-                }
-            //else not toroidal
-            } else {
-                //if out of bounds then set coordinates to cell x,y parameter
-                if (((a==-1)) || (b==-1) || 
-                    ((unsigned int)a==get_width()) || ((unsigned int)b==get_height()) ) {
-                    temp_x=x;
-                    temp_y=y;
+                if (column<=-1) {
+                    new_y=get_height()+column;
+                } else if (column>=(int) get_height()) {
+                    new_y=0+(column-get_height());
                 }
             }
 
-            //if temp x,y are not equal to cell x,y parameter and temp x,y cell is alive then 
-            //i.e. a cell cannot be its own neighbour
-            if (!((temp_x==x) && (temp_y==y)) 
-                && (current_state.get(temp_x,temp_y)==Cell::ALIVE)) {
-                //number of neighbours increments
+            //if not toroidal and out of bounds then set to x,y parameter as a cell cannot be
+            //its own neighbour
+            if (!toroidal 
+            && (row<=-1 || row>=(int) get_width() || column<=-1 || column>=(int) get_height())) {
+                new_x = x;
+                new_y = y;
+            } 
+            
+            //if new x,y is not equal to x,y parameter (cell cannot be its own neighbour) and
+            //cell at x,y is alive then increment number of neighbours
+            if (!(new_x==x && new_y==y) && current_state.get(new_x,new_y)==Cell::ALIVE) {
                 num_neighbours++;
             }
         }
     }
-    //returns total number of neighbours
     return num_neighbours;
 }
 
