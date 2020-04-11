@@ -28,7 +28,7 @@
 #include "grid.h"
 #include <fstream>
 #include <stdexcept>
-
+#include <string>
 /**
  * Zoo::glider()
  *

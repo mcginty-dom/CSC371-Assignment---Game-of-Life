@@ -17,6 +17,7 @@
 // #include ...
 #include <ostream>
 #include <stdexcept>
+#include <string>
 /**
  * Grid::Grid()
  *
