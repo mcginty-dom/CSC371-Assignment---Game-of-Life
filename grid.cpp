@@ -349,9 +349,9 @@ unsigned int Grid::get_index(const unsigned int x, const unsigned int y) const{
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-Cell Grid::get(const unsigned int x, const unsigned int y) const{
+Cell Grid::get(const int x, const int y) const{
     //if within bounds then
-    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+    if (x>=0 && x<(int)get_width() && y>=0 && y<(int)get_height()) {
         //if cell is alive return alive
         if (operator()(x,y)==Cell::ALIVE) {
             return Cell::ALIVE;
@@ -392,9 +392,9 @@ Cell Grid::get(const unsigned int x, const unsigned int y) const{
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-void Grid::set(const unsigned int x, const unsigned int y, const Cell value){
+void Grid::set(const int x, const int y, const Cell value){
     //if within bounds then
-    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+    if (x>=0 && x<(int)get_width() && y>=0 && y<(int)get_height()) {
         //replace value at modifiable reference
         operator()(x,y) = value;
     //else throw exception
@@ -439,9 +439,9 @@ void Grid::set(const unsigned int x, const unsigned int y, const Cell value){
  *      std::runtime_error or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-Cell &Grid::operator()(const unsigned int x, const unsigned int y) {
+Cell &Grid::operator()(const int x, const int y) {
     //if within bounds then
-    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+    if (x>=0 && x<(int)get_width() && y>=0 && y<(int)get_height()) {
         //gets a modifiable reference and returns it
         Cell &value = (cells[get_index(x, y)]); 
         return value;
@@ -482,9 +482,9 @@ Cell &Grid::operator()(const unsigned int x, const unsigned int y) {
  *      std::exception or sub-class if x,y is not a valid coordinate within the grid.
  */
 
-const Cell &Grid::operator()(const unsigned int x, const unsigned int y) const {
+const Cell &Grid::operator()(const int x, const int y) const {
     //if within bounds then
-    if (x>=0 && x<get_width() && y>=0 && y<get_height()) {
+    if (x>=0 && x<(int)get_width() && y>=0 && y<(int)get_height()) {
         //gets a read-only reference and returns it
         const Cell &value = cells[get_index(x, y)]; 
         return value;
@@ -529,14 +529,13 @@ const Cell &Grid::operator()(const unsigned int x, const unsigned int y) const {
  *      or if the crop window has a negative size.
  */
 
-Grid Grid::crop(const unsigned int x0,const unsigned int y0, const unsigned int x1, 
-    const unsigned int y1) const{
+Grid Grid::crop(const int x0,const int y0, const int x1, const int y1) const{
     //if x1,y1 (right,bottom) > x0,y0 (left,top) and within bounds then
-    if (x1>x0 && y1>y0 && x0>=0 && y0>=0 && x1<=get_width() && y1<=get_height()) {
+    if (x1>x0 && y1>y0 && x0>=0 && y0>=0 && x1<=(int)get_width() && y1<=(int)get_height()) {
         //Create a new grid and loop through x,y
         Grid new_grid = Grid(x1-x0,y1-y0);
-        for (unsigned int y = y0; y < y1; y++) {
-            for (unsigned int x = x0; x < x1; x++) {
+        for (unsigned int y = y0; y < (unsigned int)y1; y++) {
+            for (unsigned int x = x0; x < (unsigned int)x1; x++) {
                 //gets value from x,y of current grid and sets it into x-x0,y-y0 of new grid
                 new_grid.set(x-x0,y-y0,get(x,y));
             }

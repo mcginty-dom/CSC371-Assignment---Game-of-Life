@@ -45,12 +45,11 @@ class Grid {
         unsigned int get_dead_cells() const;
         void resize(const unsigned int square_size);
         void resize(const unsigned int width, const unsigned int height);
-        Cell get(const unsigned int x, const unsigned int y) const;
-        void set(const unsigned int x, const unsigned int y, const Cell value);
-        Cell &operator()(const unsigned int x, const unsigned int y);
-        const Cell &operator()(const unsigned int x, const unsigned int y) const;
-        Grid crop(const unsigned int x0, const unsigned int y0, const unsigned int x1,
-            const unsigned int y1) const;
+        Cell get(const int x, const int y) const;
+        void set(const int x, const int y, const Cell value);
+        Cell &operator()(const int x, const int y);
+        const Cell &operator()(const int x, const int y) const;
+        Grid crop(const int x0, const int y0, const int x1, const int y1) const;
         void merge(const Grid other, const int x0, const int y0, const bool alive_only=false);
         Grid rotate(int _rotation) const;
         friend std::ostream &operator<<(std::ostream &os, const Grid grid);
